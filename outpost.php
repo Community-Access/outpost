@@ -37,6 +37,7 @@ spl_autoload_register( function ( $class ) {
 		'Outpost_Subscriber'        => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-subscriber.php',
 		'Outpost_Email_Digest'      => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-email-digest.php',
 		'Outpost_Shortcodes'        => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-shortcodes.php',
+		'OUTPOST_Blocks'            => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-blocks.php',
 		'Outpost_Widget'            => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-widget.php',
 		'Outpost_Admin'             => OUTPOST_PLUGIN_DIR . 'admin/class-outpost-admin.php',
 		'Outpost_Public_Page'       => OUTPOST_PLUGIN_DIR . 'public/class-outpost-public-page.php',
@@ -64,6 +65,7 @@ function outpost_init() {
 	OUTPOST_Subscriber::init();
 	OUTPOST_Email_Digest::init();
 	OUTPOST_Shortcodes::init();
+	OUTPOST_Blocks::init();
 
 	// Admin
 	if ( is_admin() ) {
