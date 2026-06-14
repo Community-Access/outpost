@@ -1,0 +1,299 @@
+/* OutPost - Public Styles
+   Accessible, high-contrast, screen-reader-friendly.
+   ------------------------------------------------- */
+
+/* Feed */
+.outpost-feed {
+	margin: 1.5em 0;
+}
+
+.outpost-feed__heading {
+	font-size: 1.4em;
+	margin-bottom: 0.75em;
+}
+
+.outpost-feed__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.outpost-feed__item {
+	margin-bottom: 1.25em;
+}
+
+/* Post card */
+.outpost-post {
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	padding: 1em 1.25em;
+	background: #fff;
+}
+
+.outpost-post__author {
+	font-size: 0.875em;
+	color: #555;
+	margin: 0 0 0.5em;
+}
+
+.outpost-post__content {
+	margin: 0 0 0.75em;
+}
+
+.outpost-post__content p {
+	margin: 0 0 0.5em;
+}
+
+.outpost-post__footer {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75em;
+	font-size: 0.875em;
+	color: #666;
+}
+
+.outpost-post__date {
+	color: #666;
+}
+
+.outpost-post__link {
+	color: #0073aa;
+}
+
+.outpost-post__link:focus,
+.outpost-post__link:hover {
+	text-decoration: underline;
+}
+
+.outpost-feed__empty {
+	color: #555;
+	font-style: italic;
+}
+
+.outpost-feed__branding,
+.outpost-widget-feed__branding,
+.outpost-manage-page__branding {
+	margin-top: 1em;
+	font-size: 0.875em;
+}
+
+.outpost-branding {
+	margin: 0;
+}
+
+/* Widget feed */
+.outpost-widget-feed__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.outpost-widget-feed__item {
+	border-bottom: 1px solid #eee;
+	padding: 0.75em 0;
+}
+
+.outpost-widget-feed__item:last-child {
+	border-bottom: none;
+}
+
+.outpost-widget-feed__text {
+	margin: 0 0 0.4em;
+	font-size: 0.9em;
+}
+
+.outpost-widget-feed__meta {
+	font-size: 0.8em;
+	color: #666;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5em;
+	align-items: center;
+}
+
+.outpost-widget-feed__meta a {
+	color: #0073aa;
+}
+
+/* Subscribe form */
+.outpost-subscribe {
+	margin: 1.5em 0;
+}
+
+.outpost-subscribe__messages {
+	margin-bottom: 1em;
+}
+
+.outpost-field {
+	margin-bottom: 1em;
+}
+
+.outpost-field__label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 0.3em;
+}
+
+.outpost-field__optional {
+	font-weight: normal;
+	font-size: 0.875em;
+	color: #666;
+}
+
+.outpost-field__required {
+	color: #c00;
+	margin-left: 2px;
+}
+
+.outpost-field__input {
+	display: block;
+	width: 100%;
+	max-width: 400px;
+	padding: 0.5em 0.75em;
+	font-size: 1em;
+	border: 1px solid #999;
+	border-radius: 4px;
+	box-sizing: border-box;
+}
+
+.outpost-field__input:focus {
+	outline: 2px solid #0073aa;
+	outline-offset: 2px;
+	border-color: #0073aa;
+}
+
+/* Buttons */
+.outpost-btn {
+	display: inline-block;
+	padding: 0.6em 1.25em;
+	font-size: 1em;
+	font-weight: 600;
+	border-radius: 4px;
+	border: 2px solid transparent;
+	cursor: pointer;
+	text-align: center;
+	transition: background 0.15s, color 0.15s;
+}
+
+.outpost-btn:focus {
+	outline: 2px solid #0073aa;
+	outline-offset: 2px;
+}
+
+.outpost-btn--primary {
+	background: #0073aa;
+	color: #fff;
+	border-color: #0073aa;
+}
+
+.outpost-btn--primary:hover {
+	background: #005a87;
+	border-color: #005a87;
+}
+
+.outpost-btn--secondary {
+	background: #f5f5f5;
+	color: #333;
+	border-color: #999;
+}
+
+.outpost-btn--secondary:hover {
+	background: #e5e5e5;
+}
+
+/* Alerts */
+.outpost-alert {
+	padding: 0.875em 1em;
+	border-radius: 4px;
+	margin-bottom: 1em;
+	font-size: 1em;
+}
+
+.outpost-alert--success {
+	background: #edfaef;
+	border: 1px solid #52b86a;
+	color: #1a5c2b;
+}
+
+.outpost-alert--error {
+	background: #fef2f2;
+	border: 1px solid #c00;
+	color: #7a0000;
+}
+
+/* Inline messages (subscribe result) */
+.outpost-message--success {
+	padding: 0.75em 1em;
+	background: #edfaef;
+	border: 1px solid #52b86a;
+	color: #1a5c2b;
+	border-radius: 4px;
+}
+
+.outpost-message--error {
+	padding: 0.75em 1em;
+	background: #fef2f2;
+	border: 1px solid #c00;
+	color: #7a0000;
+	border-radius: 4px;
+}
+
+/* Error display */
+.outpost-error {
+	color: #c00;
+	font-style: italic;
+}
+
+/* Manage page */
+.outpost-manage-section {
+	margin-bottom: 2.5em;
+}
+
+.outpost-manage-hashtag {
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 1em 1.25em;
+	margin-bottom: 1em;
+}
+
+/* Lookup results */
+.outpost-lookup__list {
+	list-style: none;
+	padding: 0;
+	margin: 1em 0 0;
+}
+
+.outpost-lookup__item {
+	padding: 0.5em 0;
+	border-bottom: 1px solid #eee;
+}
+
+/* Screen-reader only utility */
+.screen-reader-text {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(1px, 1px, 1px, 1px);
+	white-space: nowrap;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	.outpost-btn {
+		transition: none;
+	}
+}
+
+/* High contrast support */
+@media (forced-colors: active) {
+	.outpost-post {
+		border: 1px solid ButtonText;
+	}
+	.outpost-btn--primary {
+		background: ButtonFace;
+		color: ButtonText;
+		border: 2px solid ButtonText;
+	}
+}
