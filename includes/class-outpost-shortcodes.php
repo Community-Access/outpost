@@ -140,7 +140,7 @@ class OUTPOST_Shortcodes {
 		<div class="outpost-subscribe" id="<?php echo esc_attr( $form_id ); ?>">
 			<div class="outpost-subscribe__form-wrap" role="region" aria-label="<?php echo esc_attr( sprintf( __( 'Subscribe to #%s digest', 'outpost' ), $hashtag_row->hashtag ) ); ?>">
 
-				<div class="outpost-subscribe__messages" aria-live="polite" aria-atomic="true"></div>
+				<div class="outpost-subscribe__messages" aria-live="polite" aria-atomic="true" tabindex="-1"></div>
 
 				<form class="outpost-subscribe__form" novalidate data-hashtag-id="<?php echo esc_attr( $hashtag_row->id ); ?>">
 					<?php wp_nonce_field( 'outpost_subscribe_nonce', 'outpost_nonce' ); ?>
