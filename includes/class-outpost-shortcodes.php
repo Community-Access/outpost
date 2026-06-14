@@ -68,10 +68,9 @@ class OUTPOST_Shortcodes {
 					<li class="outpost-feed__item">
 						<article class="outpost-post">
 							<?php if ( $account ) : ?>
-							<p class="outpost-post__author">
-								<span class="screen-reader-text"><?php esc_html_e( 'Posted by', 'outpost' ); ?> </span>
-								<?php echo $account; ?>
-							</p>
+							<h3 class="outpost-post__heading">
+								<?php printf( esc_html__( 'Post by %s', 'outpost' ), $account ); ?>
+							</h3>
 							<?php endif; ?>
 
 							<div class="outpost-post__content">
