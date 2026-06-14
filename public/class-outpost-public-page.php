@@ -78,7 +78,7 @@ class OUTPOST_Public_Page {
 				</p>
 
 				<div class="outpost-lookup">
-					<div class="outpost-lookup__messages" aria-atomic="true"></div>
+					<div class="outpost-lookup__messages" aria-live="polite" aria-atomic="true"></div>
 
 					<form class="outpost-lookup__form" novalidate>
 						<?php wp_nonce_field( 'outpost_lookup_nonce', 'outpost_lookup_nonce' ); ?>

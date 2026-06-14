@@ -239,6 +239,18 @@
 	border-radius: 4px;
 }
 
+.outpost-message--status {
+	padding: 0.75em 1em;
+	background: #f0f4ff;
+	border: 1px solid #6585cf;
+	color: #1a3a7a;
+	border-radius: 4px;
+}
+
+.outpost-subscribe--confirmed .outpost-subscribe__form {
+	display: none;
+}
+
 /* Error display */
 .outpost-error {
 	color: #c00;

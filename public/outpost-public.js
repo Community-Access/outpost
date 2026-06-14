@@ -43,6 +43,8 @@
 			success: function (response) {
 				if ( response.success ) {
 					setMessage( $msgs, 'success', response.data.message );
+					$wrap.addClass( 'outpost-subscribe--confirmed' );
+					$msgs.focus();
 					$form[0].reset();
 				} else {
 					setMessage( $msgs, 'error', response.data.message );
@@ -52,7 +54,9 @@
 				setMessage( $msgs, 'error', 'Something went wrong. Please try again.' );
 			},
 			complete: function () {
-				$btn.prop('disabled', false).text(origText);
+				if ( ! $wrap.hasClass( 'outpost-subscribe--confirmed' ) ) {
+					$btn.prop('disabled', false).text(origText);
+				}
 			}
 		});
 	});
