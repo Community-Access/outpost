@@ -30,9 +30,10 @@
 	background: #fff;
 }
 
-.outpost-post__author {
+.outpost-post__heading {
 	font-size: 0.875em;
-	color: #555;
+	font-weight: 600;
+	color: #333;
 	margin: 0 0 0.5em;
 }
 
