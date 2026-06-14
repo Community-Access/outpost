@@ -52,8 +52,8 @@ class OUTPOST_Shortcodes {
 
 		ob_start();
 		?>
-		<section class="outpost-feed" aria-label="<?php echo esc_attr( sprintf( __( '#%s posts from Mastodon', 'outpost' ), $hashtag_row->hashtag ) ); ?>">
-			<h2 class="outpost-feed__heading"><?php echo esc_html( '#' . $hashtag_row->hashtag ); ?></h2>
+		<section class="outpost-feed" aria-labelledby="outpost-feed-heading-<?php echo esc_attr( $hashtag_row->id ); ?>">
+			<h2 class="outpost-feed__heading" id="outpost-feed-heading-<?php echo esc_attr( $hashtag_row->id ); ?>"><?php echo esc_html( '#' . $hashtag_row->hashtag ); ?></h2>
 
 			<?php if ( empty( $posts ) ) : ?>
 				<p class="outpost-feed__empty"><?php esc_html_e( 'No posts found yet. Check back soon.', 'outpost' ); ?></p>
@@ -130,6 +130,9 @@ class OUTPOST_Shortcodes {
 			return '<p class="outpost-error">' . esc_html__( 'This subscription is not available.', 'outpost' ) . '</p>';
 		}
 
+		// Form ID is keyed to the hashtag DB row. Placing two outpost/feed blocks
+		// for the same hashtag on one page with showSubscribe=true produces duplicate
+		// IDs (WCAG 1.3.1). Tracked for fix in a follow-up (static instance counter).
 		$form_id = 'outpost-subscribe-' . $hashtag_row->id;
 
 		ob_start();
@@ -137,10 +140,14 @@ class OUTPOST_Shortcodes {
 		<div class="outpost-subscribe" id="<?php echo esc_attr( $form_id ); ?>">
 			<div class="outpost-subscribe__form-wrap" role="region" aria-label="<?php echo esc_attr( sprintf( __( 'Subscribe to #%s digest', 'outpost' ), $hashtag_row->hashtag ) ); ?>">
 
-				<div class="outpost-subscribe__messages" aria-live="polite" aria-atomic="true"></div>
+				<div class="outpost-subscribe__messages" aria-atomic="true"></div>
 
 				<form class="outpost-subscribe__form" novalidate data-hashtag-id="<?php echo esc_attr( $hashtag_row->id ); ?>">
 					<?php wp_nonce_field( 'outpost_subscribe_nonce', 'outpost_nonce' ); ?>
+
+					<p class="outpost-field__legend">
+						<?php esc_html_e( 'Fields marked with * are required.', 'outpost' ); ?>
+					</p>
 
 					<div class="outpost-field">
 						<label for="<?php echo esc_attr( $form_id ); ?>-name" class="outpost-field__label">

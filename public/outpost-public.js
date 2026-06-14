@@ -28,7 +28,7 @@
 		}
 
 		$btn.prop('disabled', true).text('...');
-		$msgs.html('');
+		setMessage( $msgs, 'status', 'Subscribing…' );
 
 		$.ajax({
 			url:  outpostData.ajaxUrl,
@@ -78,7 +78,7 @@
 		}
 
 		$btn.prop('disabled', true).text('...');
-		$msgs.html('');
+		setMessage( $msgs, 'status', 'Looking up your subscriptions…' );
 		$results.html('');
 
 		$.ajax({
@@ -109,7 +109,10 @@
 	// Helpers
 	// -------------------------------------------------------------------------
 	function setMessage( $el, type, text ) {
-		$el.html( '<div class="outpost-message--' + type + '" role="alert">' + escHtml(text) + '</div>' );
+		// Drive announcements via the container's aria-live rather than a nested
+		// role="alert" (which conflicts with the outer live region on NVDA/JAWS).
+		$el.attr( 'aria-live', type === 'error' ? 'assertive' : 'polite' );
+		$el.html( '<div class="outpost-message--' + type + '">' + escHtml( text ) + '</div>' );
 	}
 
 	function escHtml( str ) {

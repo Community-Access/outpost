@@ -1,0 +1,28 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "outpost/feed",
+    "title": "Mastodon Hashtag Feed",
+    "category": "widgets",
+    "icon": "rss",
+    "description": "Display recent posts for a Mastodon hashtag, with an optional subscribe form.",
+    "textdomain": "outpost",
+    "attributes": {
+        "tag": {
+            "type": "string",
+            "default": ""
+        },
+        "limit": {
+            "type": "number",
+            "default": 20
+        },
+        "showSubscribe": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "supports": {
+        "html": false
+    },
+    "editorScript": "file:./editor.js"
+}

@@ -23,23 +23,21 @@ define( 'OUTPOST_PLUGIN_FILE', __FILE__ );
 define( 'OUTPOST_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'OUTPOST_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 
-// Autoload classes
+// Autoload classes — keys must match the exact string PHP passes to the
+// autoloader, which is the casing used at each call site (all OUTPOST_).
 spl_autoload_register( function ( $class ) {
-	$prefix = 'OUTPOST_';
-	if ( strpos( $class, $prefix ) !== 0 ) {
-		return;
-	}
 	$map = [
-		'Outpost_Activator'         => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-activator.php',
-		'Outpost_Settings'          => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-settings.php',
-		'Outpost_Hashtag_Manager'   => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-hashtag-manager.php',
-		'Outpost_Feed_Fetcher'      => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-feed-fetcher.php',
-		'Outpost_Subscriber'        => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-subscriber.php',
-		'Outpost_Email_Digest'      => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-email-digest.php',
-		'Outpost_Shortcodes'        => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-shortcodes.php',
-		'Outpost_Widget'            => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-widget.php',
-		'Outpost_Admin'             => OUTPOST_PLUGIN_DIR . 'admin/class-outpost-admin.php',
-		'Outpost_Public_Page'       => OUTPOST_PLUGIN_DIR . 'public/class-outpost-public-page.php',
+		'OUTPOST_Activator'       => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-activator.php',
+		'OUTPOST_Settings'        => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-settings.php',
+		'OUTPOST_Hashtag_Manager' => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-hashtag-manager.php',
+		'OUTPOST_Feed_Fetcher'    => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-feed-fetcher.php',
+		'OUTPOST_Subscriber'      => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-subscriber.php',
+		'OUTPOST_Email_Digest'    => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-email-digest.php',
+		'OUTPOST_Shortcodes'      => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-shortcodes.php',
+		'OUTPOST_Blocks'          => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-blocks.php',
+		'OUTPOST_Widget'          => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-widget.php',
+		'OUTPOST_Admin'           => OUTPOST_PLUGIN_DIR . 'admin/class-outpost-admin.php',
+		'OUTPOST_Public_Page'     => OUTPOST_PLUGIN_DIR . 'public/class-outpost-public-page.php',
 	];
 	if ( isset( $map[ $class ] ) ) {
 		require_once $map[ $class ];
@@ -47,8 +45,8 @@ spl_autoload_register( function ( $class ) {
 } );
 
 // Activation / deactivation hooks
-register_activation_hook( __FILE__,  [ 'Outpost_Activator', 'activate' ] );
-register_deactivation_hook( __FILE__, [ 'Outpost_Activator', 'deactivate' ] );
+register_activation_hook( __FILE__,  [ 'OUTPOST_Activator', 'activate' ] );
+register_deactivation_hook( __FILE__, [ 'OUTPOST_Activator', 'deactivate' ] );
 
 /**
  * Bootstrap the plugin after all plugins are loaded.
@@ -64,6 +62,7 @@ function outpost_init() {
 	OUTPOST_Subscriber::init();
 	OUTPOST_Email_Digest::init();
 	OUTPOST_Shortcodes::init();
+	OUTPOST_Blocks::init();
 
 	// Admin
 	if ( is_admin() ) {
@@ -75,7 +74,7 @@ function outpost_init() {
 
 	// Register widget
 	add_action( 'widgets_init', function () {
-		register_widget( 'Outpost_Widget' );
+		register_widget( 'OUTPOST_Widget' );
 	} );
 }
 add_action( 'plugins_loaded', 'outpost_init' );

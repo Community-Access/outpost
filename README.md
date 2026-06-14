@@ -61,7 +61,13 @@ Each hashtag automatically gets its own shortcodes, widget, and subscriber list.
 
 ## Displaying a feed on a page
 
-Use this shortcode on any page or post:
+### Using the block editor
+
+Add the **Mastodon Hashtag Feed** block to any page or post. In the block
+settings panel, choose a hashtag, set how many posts to show, and optionally
+turn on "Show subscribe form" to display a subscribe form below the feed.
+
+### Using the shortcode
 
 ```
 [outpost_feed tag="bitstips"]
