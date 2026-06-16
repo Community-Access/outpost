@@ -23,24 +23,26 @@ define( 'OUTPOST_PLUGIN_FILE', __FILE__ );
 define( 'OUTPOST_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'OUTPOST_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 
-// Autoload classes — keys must match the exact string PHP passes to the
-// autoloader, which is the casing used at each call site (all OUTPOST_).
+// Autoload classes. PHP class names are case-insensitive, so the lookup is
+// keyed on a lowercased class name to stay robust regardless of the casing
+// used at any given call site.
 spl_autoload_register( function ( $class ) {
 	$map = [
-		'OUTPOST_Activator'       => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-activator.php',
-		'OUTPOST_Settings'        => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-settings.php',
-		'OUTPOST_Hashtag_Manager' => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-hashtag-manager.php',
-		'OUTPOST_Feed_Fetcher'    => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-feed-fetcher.php',
-		'OUTPOST_Subscriber'      => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-subscriber.php',
-		'OUTPOST_Email_Digest'    => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-email-digest.php',
-		'OUTPOST_Shortcodes'      => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-shortcodes.php',
-		'OUTPOST_Blocks'          => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-blocks.php',
-		'OUTPOST_Widget'          => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-widget.php',
-		'OUTPOST_Admin'           => OUTPOST_PLUGIN_DIR . 'admin/class-outpost-admin.php',
-		'OUTPOST_Public_Page'     => OUTPOST_PLUGIN_DIR . 'public/class-outpost-public-page.php',
+		'outpost_activator'       => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-activator.php',
+		'outpost_settings'        => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-settings.php',
+		'outpost_hashtag_manager' => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-hashtag-manager.php',
+		'outpost_feed_fetcher'    => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-feed-fetcher.php',
+		'outpost_subscriber'      => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-subscriber.php',
+		'outpost_email_digest'    => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-email-digest.php',
+		'outpost_shortcodes'      => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-shortcodes.php',
+		'outpost_blocks'          => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-blocks.php',
+		'outpost_widget'          => OUTPOST_PLUGIN_DIR . 'includes/class-outpost-widget.php',
+		'outpost_admin'           => OUTPOST_PLUGIN_DIR . 'admin/class-outpost-admin.php',
+		'outpost_public_page'     => OUTPOST_PLUGIN_DIR . 'public/class-outpost-public-page.php',
 	];
-	if ( isset( $map[ $class ] ) ) {
-		require_once $map[ $class ];
+	$key = strtolower( $class );
+	if ( isset( $map[ $key ] ) ) {
+		require_once $map[ $key ];
 	}
 } );
 
