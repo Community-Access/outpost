@@ -13,9 +13,37 @@ class OUTPOST_Admin {
 
 	public static function init() {
 		add_action( 'admin_menu',         [ __CLASS__, 'register_menus' ] );
+		add_action( 'admin_init',         [ __CLASS__, 'maybe_redirect_to_wizard' ] );
 		add_action( 'admin_init',         [ __CLASS__, 'handle_form_submissions' ] );
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
 		add_action( 'admin_notices',      [ __CLASS__, 'show_setup_wizard_notice' ] );
+	}
+
+	/**
+	 * Redirect to the setup wizard once, right after first activation.
+	 *
+	 * Skips bulk plugin activation so activating several plugins at once does
+	 * not hijack the page to OutPost's wizard.
+	 */
+	public static function maybe_redirect_to_wizard() {
+		if ( ! get_transient( 'outpost_redirect_to_wizard' ) ) {
+			return;
+		}
+
+		// One-shot: clear the flag so re-activation later does not redirect again.
+		delete_transient( 'outpost_redirect_to_wizard' );
+
+		// Don't redirect during bulk plugin activation.
+		if ( isset( $_GET['activate-multi'] ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		wp_safe_redirect( admin_url( 'admin.php?page=outpost-setup' ) );
+		exit;
 	}
 
 	// -------------------------------------------------------------------------
