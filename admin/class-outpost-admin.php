@@ -30,18 +30,21 @@ class OUTPOST_Admin {
 			return;
 		}
 
-		// One-shot: clear the flag so re-activation later does not redirect again.
-		delete_transient( 'outpost_redirect_to_wizard' );
-
-		// Don't redirect during bulk plugin activation.
+		// During bulk plugin activation, clear the flag and do not redirect, so a
+		// later page load does not unexpectedly redirect either.
 		if ( isset( $_GET['activate-multi'] ) ) {
+			delete_transient( 'outpost_redirect_to_wizard' );
 			return;
 		}
 
+		// Leave the flag in place for non-admin admin-area loads so the wizard
+		// redirect is preserved until someone who can run it arrives.
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
+		// Consume the flag and redirect exactly once.
+		delete_transient( 'outpost_redirect_to_wizard' );
 		wp_safe_redirect( admin_url( 'admin.php?page=outpost-setup' ) );
 		exit;
 	}
