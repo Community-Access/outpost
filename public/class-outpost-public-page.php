@@ -50,6 +50,11 @@ class OUTPOST_Public_Page {
 		$active_hashtags = OUTPOST_Hashtag_Manager::get_all( true );
 		$branding        = OUTPOST_Settings::get_branding_html();
 
+		// Token carried over from an unsubscribe link, awaiting POST confirmation.
+		$confirm_unsub_token = ( 'confirm_unsub' === $status && isset( $_GET['outpost_token'] ) )
+			? sanitize_text_field( wp_unslash( $_GET['outpost_token'] ) )
+			: '';
+
 		ob_start();
 		?>
 		<div class="outpost-manage-page">
@@ -58,6 +63,21 @@ class OUTPOST_Public_Page {
 			<div class="outpost-alert outpost-alert--<?php echo esc_attr( $messages[ $status ]['type'] ); ?>" role="alert">
 				<?php echo esc_html( $messages[ $status ]['text'] ); ?>
 			</div>
+			<?php endif; ?>
+
+			<?php if ( $confirm_unsub_token ) : ?>
+			<section class="outpost-manage-section" aria-labelledby="outpost-unsub-heading">
+				<h2 id="outpost-unsub-heading"><?php esc_html_e( 'Confirm unsubscribe', 'outpost' ); ?></h2>
+				<p><?php esc_html_e( 'Are you sure you want to unsubscribe? You will stop receiving emails for this digest.', 'outpost' ); ?></p>
+				<form method="post">
+					<?php wp_nonce_field( 'outpost_unsubscribe', 'outpost_unsub_nonce' ); ?>
+					<input type="hidden" name="outpost_action" value="confirm_unsubscribe" />
+					<input type="hidden" name="outpost_token" value="<?php echo esc_attr( $confirm_unsub_token ); ?>" />
+					<button type="submit" class="outpost-btn outpost-btn--primary">
+						<?php esc_html_e( 'Yes, unsubscribe me', 'outpost' ); ?>
+					</button>
+				</form>
+			</section>
 			<?php endif; ?>
 
 			<section class="outpost-manage-section" aria-labelledby="outpost-subscribe-heading">
