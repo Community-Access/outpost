@@ -1,7 +1,7 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit;
 // Variables available: $subscriber, $hashtag_row, $unsubscribe_url, $name
 ?><!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo esc_attr( get_bloginfo( 'language' ) ); ?>">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
