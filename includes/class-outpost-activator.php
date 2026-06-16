@@ -6,6 +6,31 @@
  */
 class OUTPOST_Activator {
 
+	/** Current database/schema version. */
+	const DB_VERSION = '1.2.0';
+
+	/** Options that are read on the front end and should autoload. */
+	const AUTOLOAD_YES = array(
+		'outpost_branding_text',
+		'outpost_branding_url',
+		'outpost_cache_duration',
+		'outpost_brand_account',
+	);
+
+	/** Options only read in admin/cron and should NOT autoload. */
+	const AUTOLOAD_NO = array(
+		'outpost_digest_send_hour',
+		'outpost_digest_send_minute',
+		'outpost_from_name',
+		'outpost_from_email',
+		'outpost_posts_per_digest',
+		'outpost_digest_batch_size',
+		'outpost_double_optin',
+		'outpost_manage_page_id',
+		'outpost_db_version',
+		'outpost_show_setup_wizard',
+	);
+
 	/**
 	 * Run on plugin activation.
 	 */
@@ -25,6 +50,9 @@ class OUTPOST_Activator {
 			update_option( 'outpost_show_setup_wizard', true );
 			set_transient( 'outpost_redirect_to_wizard', true, 30 );
 		}
+
+		// Apply autoload settings last, once every option exists.
+		self::apply_option_autoload();
 	}
 
 	/**
@@ -90,21 +118,35 @@ class OUTPOST_Activator {
 		dbDelta( $sql_subscribers );
 		dbDelta( $sql_digest_log );
 
-		update_option( 'outpost_db_version', '1.1.0' );
+		update_option( 'outpost_db_version', self::DB_VERSION );
 	}
 
 	/**
-	 * Run schema upgrades for already-installed sites. Idempotent.
+	 * Run schema/option upgrades for already-installed sites. Idempotent.
 	 */
 	public static function maybe_upgrade() {
 		$installed = get_option( 'outpost_db_version' );
-		if ( $installed && version_compare( $installed, '1.1.0', '>=' ) ) {
+		if ( $installed && version_compare( $installed, self::DB_VERSION, '>=' ) ) {
 			return;
 		}
 		// create_tables() runs dbDelta with the current schema, which adds any
 		// missing columns (e.g. account_filter) on existing installs, and writes
-		// the new db version.
+		// the current db version.
 		self::create_tables();
+		// Tune option autoload for installs that predate the autoload split.
+		self::apply_option_autoload();
+	}
+
+	/**
+	 * Set the autoload flag on plugin options so admin/cron-only options are not
+	 * loaded on every front-end request. Safe to call repeatedly.
+	 */
+	private static function apply_option_autoload() {
+		if ( ! function_exists( 'wp_set_options_autoload' ) ) {
+			return; // WordPress < 6.4; plugin requires 7.0, so this is just a guard.
+		}
+		wp_set_options_autoload( self::AUTOLOAD_NO, false );
+		wp_set_options_autoload( self::AUTOLOAD_YES, true );
 	}
 
 	/**
@@ -127,9 +169,10 @@ class OUTPOST_Activator {
 		);
 
 		foreach ( $defaults as $key => $value ) {
-			if ( false === get_option( $key ) ) {
-				update_option( $key, $value );
-			}
+			// add_option() is a no-op if the option already exists, and lets us set
+			// the autoload flag at creation time.
+			$autoload = in_array( $key, self::AUTOLOAD_YES, true ) ? 'yes' : 'no';
+			add_option( $key, $value, '', $autoload );
 		}
 	}
 
