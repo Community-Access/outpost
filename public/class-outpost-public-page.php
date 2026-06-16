@@ -10,6 +10,11 @@ class OUTPOST_Public_Page {
 
 	public static function init() {
 		add_shortcode( 'outpost_manage_subscriptions', [ __CLASS__, 'render_manage_page' ] );
+
+		// Registered here (not inside the shortcode render) so the handler is
+		// available during admin-ajax.php requests, where the shortcode never runs.
+		add_action( 'wp_ajax_nopriv_outpost_lookup', [ __CLASS__, 'handle_lookup_ajax' ] );
+		add_action( 'wp_ajax_outpost_lookup',        [ __CLASS__, 'handle_lookup_ajax' ] );
 	}
 
 	/**
@@ -74,7 +79,7 @@ class OUTPOST_Public_Page {
 			<section class="outpost-manage-section" aria-labelledby="outpost-lookup-heading">
 				<h2 id="outpost-lookup-heading"><?php esc_html_e( 'Manage existing subscriptions', 'outpost' ); ?></h2>
 				<p>
-					<?php esc_html_e( 'Enter your email address to see your current subscriptions. Each digest email also contains an unsubscribe link at the bottom.', 'outpost' ); ?>
+					<?php esc_html_e( 'Enter your email address and we will email you a list of your subscriptions, each with an unsubscribe link. Every digest email also contains an unsubscribe link at the bottom.', 'outpost' ); ?>
 				</p>
 
 				<div class="outpost-lookup">
@@ -100,11 +105,9 @@ class OUTPOST_Public_Page {
 						</div>
 
 						<button type="submit" class="outpost-btn outpost-btn--secondary">
-							<?php esc_html_e( 'Look up my subscriptions', 'outpost' ); ?>
+							<?php esc_html_e( 'Email me my management links', 'outpost' ); ?>
 						</button>
 					</form>
-
-					<div class="outpost-lookup__results" aria-live="polite"></div>
 				</div>
 			</section>
 
@@ -116,21 +119,22 @@ class OUTPOST_Public_Page {
 
 		</div>
 		<?php
-
-		// Register AJAX handler for email lookup
-		add_action( 'wp_ajax_nopriv_outpost_lookup', [ __CLASS__, 'handle_lookup_ajax' ] );
-		add_action( 'wp_ajax_outpost_lookup',        [ __CLASS__, 'handle_lookup_ajax' ] );
-
 		return ob_get_clean();
 	}
 
 	/**
-	 * AJAX: look up subscriptions by email and return unsubscribe links.
+	 * AJAX: look up subscriptions by email and email the management links to that
+	 * address.
+	 *
+	 * The links (which contain secret unsubscribe tokens) are sent to the address
+	 * on file rather than returned to the requester, and the response is identical
+	 * whether or not the address has any subscriptions. This prevents a third party
+	 * from harvesting another person's tokens or enumerating who is subscribed.
 	 */
 	public static function handle_lookup_ajax() {
 		check_ajax_referer( 'outpost_lookup_nonce', 'outpost_nonce' );
 
-		$email = sanitize_email( $_POST['email'] ?? '' );
+		$email = sanitize_email( wp_unslash( $_POST['email'] ?? '' ) );
 
 		if ( ! is_email( $email ) ) {
 			wp_send_json_error( [ 'message' => __( 'Please enter a valid email address.', 'outpost' ) ] );
@@ -145,28 +149,58 @@ class OUTPOST_Public_Page {
 			$email
 		) );
 
-		if ( empty( $rows ) ) {
-			wp_send_json_success( [
-				'html' => '<p>' . esc_html__( 'No active subscriptions found for that email address.', 'outpost' ) . '</p>',
-			] );
+		// Throttle the email send per IP so the endpoint cannot be used to fire
+		// repeated mail at a subscribed address. The response below is identical
+		// whether or not we send, so throttling never reveals subscription status.
+		if ( ! empty( $rows ) && self::lookup_send_allowed() ) {
+			self::send_manage_links_email( $email, $rows );
 		}
 
-		$html = '<ul class="outpost-lookup__list" role="list">';
-		foreach ( $rows as $row ) {
-			$status_label = $row->status === 'pending'
-				? __( 'Pending confirmation', 'outpost' )
-				: __( 'Active', 'outpost' );
+		// Always return the same message, regardless of whether the address was
+		// found, so the endpoint never confirms or denies a subscription and never
+		// exposes a token to the requester.
+		wp_send_json_success( [
+			'message' => __( 'If that email address has any subscriptions, we have just emailed you your management links. Please check your inbox.', 'outpost' ),
+		] );
+	}
 
-			$unsub_url = OUTPOST_Subscriber::unsubscribe_url( $row );
-
-			$html .= '<li class="outpost-lookup__item">';
-			$html .= '<strong>#' . esc_html( $row->hashtag ) . '</strong> ';
-			$html .= '&mdash; ' . esc_html( $status_label ) . ' ';
-			$html .= '<a href="' . esc_url( $unsub_url ) . '">' . esc_html__( 'Unsubscribe', 'outpost' ) . '</a>';
-			$html .= '</li>';
+	/**
+	 * Whether a management-links email may be sent for the current request,
+	 * based on a per-IP rate limit (5 sends / 10 minutes).
+	 *
+	 * @return bool
+	 */
+	private static function lookup_send_allowed() {
+		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+		if ( ! $ip ) {
+			return true;
 		}
-		$html .= '</ul>';
 
-		wp_send_json_success( [ 'html' => $html ] );
+		$rl_key = 'outpost_lookup_rl_' . md5( $ip );
+		$count  = (int) get_transient( $rl_key );
+		if ( $count >= 5 ) {
+			return false;
+		}
+
+		set_transient( $rl_key, $count + 1, 10 * MINUTE_IN_SECONDS );
+		return true;
+	}
+
+	/**
+	 * Email a subscriber the list of their active subscriptions, each with its
+	 * unsubscribe link.
+	 *
+	 * @param string $email Recipient address (already validated).
+	 * @param array  $rows  Subscriber rows joined with hashtag data.
+	 */
+	private static function send_manage_links_email( $email, $rows ) {
+		$subject       = __( 'Your subscriptions', 'outpost' );
+		$branding_html = OUTPOST_Settings::get_branding_html( false );
+
+		ob_start();
+		include OUTPOST_PLUGIN_DIR . 'templates/email/manage-links.php';
+		$body = ob_get_clean();
+
+		OUTPOST_Subscriber::send_email( $email, $subject, $body );
 	}
 }
