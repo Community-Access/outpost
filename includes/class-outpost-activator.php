@@ -114,10 +114,9 @@ class OUTPOST_Activator {
 	 * does not re-create tables, re-seed defaults, or reset the setup-wizard flag.
 	 */
 	public static function reschedule_digest_cron() {
-		$timestamp = wp_next_scheduled( 'outpost_daily_digest_event' );
-		if ( $timestamp ) {
-			wp_unschedule_event( $timestamp, 'outpost_daily_digest_event' );
-		}
+		// Clear every scheduled instance of the hook, not just the next one, so
+		// any accidental WP-Cron duplicates cannot run the digest more than once.
+		wp_clear_scheduled_hook( 'outpost_daily_digest_event' );
 		self::schedule_cron();
 	}
 
