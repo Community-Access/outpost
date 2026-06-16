@@ -32,24 +32,52 @@ class OUTPOST_Feed_Fetcher {
 		}
 
 		$cache_key = 'outpost_feed_' . $hashtag_id;
+		$posts     = false;
 
 		if ( ! $force ) {
 			$cached = get_transient( $cache_key );
 			if ( $cached !== false ) {
-				return array_slice( $cached, 0, $limit );
+				$posts = $cached;
 			}
 		}
 
-		$posts = self::fetch_from_api( $hashtag_row );
-		if ( ! is_wp_error( $posts ) ) {
-			set_transient( $cache_key, $posts, OUTPOST_Settings::get_cache_duration() );
-		} else {
-			// On error, return stale cache if available
-			$stale = get_transient( $cache_key );
-			return $stale ? array_slice( $stale, 0, $limit ) : [];
+		if ( $posts === false ) {
+			$fetched = self::fetch_from_api( $hashtag_row );
+			if ( ! is_wp_error( $fetched ) ) {
+				set_transient( $cache_key, $fetched, OUTPOST_Settings::get_cache_duration() );
+				$posts = $fetched;
+			} else {
+				// On error, fall back to stale cache if available.
+				$stale = get_transient( $cache_key );
+				$posts = $stale ? $stale : [];
+			}
 		}
 
+		$posts = self::apply_account_filter( $posts, $hashtag_row );
+
 		return array_slice( $posts, 0, $limit );
+	}
+
+	/**
+	 * Restrict posts to the hashtag's account_filter when one is set.
+	 *
+	 * @param array  $posts
+	 * @param object $hashtag_row
+	 * @return array
+	 */
+	private static function apply_account_filter( $posts, $hashtag_row ) {
+		$filter = isset( $hashtag_row->account_filter ) ? $hashtag_row->account_filter : '';
+		if ( '' === $filter ) {
+			return $posts;
+		}
+
+		$matched = array_filter( $posts, function ( $post ) use ( $filter ) {
+			$acct = isset( $post->account->acct ) ? $post->account->acct : '';
+			$url  = isset( $post->account->url ) ? $post->account->url : '';
+			return OUTPOST_Hashtag_Manager::post_matches_filter( $filter, $acct, $url );
+		} );
+
+		return array_values( $matched );
 	}
 
 	/**
