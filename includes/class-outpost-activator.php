@@ -15,6 +15,8 @@ class OUTPOST_Activator {
 		self::schedule_cron();
 		// Flag so the admin sees the setup wizard on first load
 		update_option( 'outpost_show_setup_wizard', true );
+		// Short-lived flag so the next admin page load redirects to the wizard.
+		set_transient( 'outpost_redirect_to_wizard', true, 30 );
 	}
 
 	/**
