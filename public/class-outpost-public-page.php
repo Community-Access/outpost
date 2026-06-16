@@ -134,7 +134,7 @@ class OUTPOST_Public_Page {
 	public static function handle_lookup_ajax() {
 		check_ajax_referer( 'outpost_lookup_nonce', 'outpost_nonce' );
 
-		$email = sanitize_email( $_POST['email'] ?? '' );
+		$email = sanitize_email( wp_unslash( $_POST['email'] ?? '' ) );
 
 		if ( ! is_email( $email ) ) {
 			wp_send_json_error( [ 'message' => __( 'Please enter a valid email address.', 'outpost' ) ] );
@@ -149,7 +149,10 @@ class OUTPOST_Public_Page {
 			$email
 		) );
 
-		if ( ! empty( $rows ) ) {
+		// Throttle the email send per IP so the endpoint cannot be used to fire
+		// repeated mail at a subscribed address. The response below is identical
+		// whether or not we send, so throttling never reveals subscription status.
+		if ( ! empty( $rows ) && self::lookup_send_allowed() ) {
 			self::send_manage_links_email( $email, $rows );
 		}
 
@@ -159,6 +162,28 @@ class OUTPOST_Public_Page {
 		wp_send_json_success( [
 			'message' => __( 'If that email address has any subscriptions, we have just emailed you your management links. Please check your inbox.', 'outpost' ),
 		] );
+	}
+
+	/**
+	 * Whether a management-links email may be sent for the current request,
+	 * based on a per-IP rate limit (5 sends / 10 minutes).
+	 *
+	 * @return bool
+	 */
+	private static function lookup_send_allowed() {
+		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+		if ( ! $ip ) {
+			return true;
+		}
+
+		$rl_key = 'outpost_lookup_rl_' . md5( $ip );
+		$count  = (int) get_transient( $rl_key );
+		if ( $count >= 5 ) {
+			return false;
+		}
+
+		set_transient( $rl_key, $count + 1, 10 * MINUTE_IN_SECONDS );
+		return true;
 	}
 
 	/**
