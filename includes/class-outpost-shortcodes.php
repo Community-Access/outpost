@@ -178,6 +178,23 @@ class OUTPOST_Shortcodes {
 						/>
 					</div>
 
+					<?php
+					// Honeypot: kept in the DOM for bots but moved off-screen via CSS and
+					// removed from the tab order. No aria-hidden, since a focusable field
+					// inside an aria-hidden subtree fails WCAG 4.1.2. The "leave blank"
+					// label covers the rare screen-reader user who navigates onto it.
+					?>
+					<div class="outpost-hp">
+						<label for="<?php echo esc_attr( $form_id ); ?>-hp"><?php esc_html_e( 'Leave this field blank', 'outpost' ); ?></label>
+						<input
+							type="text"
+							id="<?php echo esc_attr( $form_id ); ?>-hp"
+							name="outpost_hp_check"
+							tabindex="-1"
+							autocomplete="off"
+						/>
+					</div>
+
 					<button type="submit" class="outpost-btn outpost-btn--primary">
 						<?php echo esc_html( sprintf( __( 'Subscribe to #%s', 'outpost' ), $hashtag_row->hashtag ) ); ?>
 					</button>
@@ -194,6 +211,26 @@ class OUTPOST_Shortcodes {
 
 	public static function handle_subscribe_ajax() {
 		check_ajax_referer( 'outpost_subscribe_nonce', 'outpost_nonce' );
+
+		// Honeypot: a filled hidden field means an automated submission. Trim first
+		// so an autofilled space is not mistaken for a real value. Return a generic
+		// success so bots get no signal, but do not process the request.
+		$hp = isset( $_POST['outpost_hp_check'] ) ? trim( wp_unslash( $_POST['outpost_hp_check'] ) ) : '';
+		if ( '' !== $hp ) {
+			wp_send_json_success( [ 'message' => __( 'Thanks! Please check your email.', 'outpost' ) ] );
+		}
+
+		// Rate limit per IP so the endpoint cannot be used to send confirmation
+		// emails to arbitrary addresses in bulk.
+		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+		if ( $ip ) {
+			$rl_key = 'outpost_sub_rl_' . md5( $ip );
+			$count  = (int) get_transient( $rl_key );
+			if ( $count >= 5 ) {
+				wp_send_json_error( [ 'message' => __( 'Too many attempts. Please wait a few minutes and try again.', 'outpost' ) ] );
+			}
+			set_transient( $rl_key, $count + 1, 10 * MINUTE_IN_SECONDS );
+		}
 
 		$hashtag_id = isset( $_POST['hashtag_id'] ) ? (int) $_POST['hashtag_id'] : 0;
 		$email      = isset( $_POST['email'] )      ? sanitize_email( $_POST['email'] ) : '';

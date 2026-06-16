@@ -292,6 +292,18 @@
 	white-space: nowrap;
 }
 
+/* Honeypot: kept in the DOM for bots but moved off-screen and out of the layout.
+   The field is also tabindex="-1" in the markup, so keyboard users skip it. No
+   aria-hidden (a focusable field inside it would fail WCAG 4.1.2); the field's
+   "leave blank" label covers the rare screen-reader user who navigates onto it. */
+.outpost-hp {
+	position: absolute;
+	left: -9999px;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
 	.outpost-btn {
