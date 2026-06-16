@@ -118,7 +118,39 @@ class OUTPOST_Activator {
 		dbDelta( $sql_subscribers );
 		dbDelta( $sql_digest_log );
 
+		// Explicitly ensure columns added in later versions exist. dbDelta is
+		// meant to diff and ALTER existing tables, but it is formatting-sensitive
+		// and unreliable for in-place column adds, so we add them deterministically.
+		self::ensure_columns();
+
 		update_option( 'outpost_db_version', self::DB_VERSION );
+	}
+
+	/**
+	 * Add any columns introduced after the initial schema, if missing. Idempotent.
+	 */
+	private static function ensure_columns() {
+		global $wpdb;
+		$table = $wpdb->prefix . 'outpost_hashtags';
+
+		if ( ! self::column_exists( $table, 'account_filter' ) ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.SchemaChange -- trusted table name; one-time schema migration.
+			$wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN account_filter VARCHAR(255) NOT NULL DEFAULT ''" );
+		}
+	}
+
+	/**
+	 * Whether a column exists on a table.
+	 *
+	 * @param string $table  Full (prefixed) table name.
+	 * @param string $column Column name.
+	 * @return bool
+	 */
+	private static function column_exists( $table, $column ) {
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- trusted table name; column is placeheld.
+		$found = $wpdb->get_results( $wpdb->prepare( "SHOW COLUMNS FROM `{$table}` LIKE %s", $column ) );
+		return ! empty( $found );
 	}
 
 	/**
@@ -129,9 +161,8 @@ class OUTPOST_Activator {
 		if ( $installed && version_compare( $installed, self::DB_VERSION, '>=' ) ) {
 			return;
 		}
-		// create_tables() runs dbDelta with the current schema, which adds any
-		// missing columns (e.g. account_filter) on existing installs, and writes
-		// the current db version.
+		// create_tables() runs dbDelta and then explicitly ensures any
+		// later-added columns exist, and writes the current db version.
 		self::create_tables();
 		// Tune option autoload for installs that predate the autoload split.
 		self::apply_option_autoload();
