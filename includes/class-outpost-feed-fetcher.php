@@ -248,22 +248,18 @@ class OUTPOST_Feed_Fetcher {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			error_log( '[Outpost] Feed fetch error for hashtag #' . $hashtag_row->hashtag . ': ' . $response->get_error_message() );
 			return $response;
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
 		if ( $code !== 200 ) {
-			$msg = 'HTTP ' . $code . ' for ' . $url;
-			error_log( '[Outpost] Feed fetch error: ' . $msg );
-			return new WP_Error( 'api_error', $msg );
+			return new WP_Error( 'api_error', 'HTTP ' . $code . ' for ' . $url );
 		}
 
 		$body  = wp_remote_retrieve_body( $response );
 		$posts = json_decode( $body );
 
 		if ( json_last_error() !== JSON_ERROR_NONE || ! is_array( $posts ) ) {
-			error_log( '[Outpost] JSON decode error for hashtag #' . $hashtag_row->hashtag );
 			return new WP_Error( 'json_error', 'Invalid JSON from Mastodon API' );
 		}
 
