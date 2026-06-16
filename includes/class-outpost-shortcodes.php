@@ -10,8 +10,9 @@
 class OUTPOST_Shortcodes {
 
 	public static function init() {
-		add_shortcode( 'outpost_feed',      [ __CLASS__, 'render_feed' ] );
-		add_shortcode( 'outpost_subscribe', [ __CLASS__, 'render_subscribe_form' ] );
+		add_shortcode( 'outpost_feed',         [ __CLASS__, 'render_feed' ] );
+		add_shortcode( 'outpost_account_feed', [ __CLASS__, 'render_account_feed' ] );
+		add_shortcode( 'outpost_subscribe',    [ __CLASS__, 'render_subscribe_form' ] );
 
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
 		add_action( 'wp_ajax_nopriv_outpost_subscribe', [ __CLASS__, 'handle_subscribe_ajax' ] );
@@ -62,40 +63,47 @@ class OUTPOST_Shortcodes {
 			<?php if ( empty( $posts ) ) : ?>
 				<p class="outpost-feed__empty"><?php esc_html_e( 'No posts found yet. Check back soon.', 'outpost' ); ?></p>
 			<?php else : ?>
-				<ul class="outpost-feed__list" role="list">
-					<?php foreach ( $posts as $post ) :
-						$text    = OUTPOST_Feed_Fetcher::post_to_plain_text( $post->content );
-						$date    = OUTPOST_Feed_Fetcher::format_date( $post->created_at );
-						$url     = esc_url( $post->url );
-						$account = isset( $post->account->acct ) ? '@' . esc_html( $post->account->acct ) : '';
-					?>
-					<li class="outpost-feed__item">
-						<article class="outpost-post">
-							<?php if ( $account ) : ?>
-							<h3 class="outpost-post__heading">
-								<?php printf( esc_html__( 'Post by %s', 'outpost' ), $account ); ?>
-							</h3>
-							<?php endif; ?>
+				<?php echo self::render_posts_list( $posts ); ?>
+			<?php endif; ?>
 
-							<div class="outpost-post__content">
-								<?php echo wp_kses_post( wpautop( esc_html( $text ) ) ); ?>
-							</div>
+			<?php if ( $branding ) : ?>
+			<div class="outpost-feed__branding">
+				<?php echo $branding; ?>
+			</div>
+			<?php endif; ?>
+		</section>
+		<?php
+		return ob_get_clean();
+	}
 
-							<footer class="outpost-post__footer">
-								<?php if ( $date ) : ?>
-								<time class="outpost-post__date" datetime="<?php echo esc_attr( $post->created_at ); ?>">
-									<?php echo esc_html( $date ); ?>
-								</time>
-								<?php endif; ?>
-								<a class="outpost-post__link" href="<?php echo $url; ?>" target="_blank" rel="noopener noreferrer">
-									<?php esc_html_e( 'View on Mastodon', 'outpost' ); ?>
-									<span class="screen-reader-text"><?php esc_html_e( '(opens in new tab)', 'outpost' ); ?></span>
-								</a>
-							</footer>
-						</article>
-					</li>
-					<?php endforeach; ?>
-				</ul>
+	// -------------------------------------------------------------------------
+	// Account feed shortcode
+	// -------------------------------------------------------------------------
+
+	/**
+	 * [outpost_account_feed limit="20"]
+	 */
+	public static function render_account_feed( $atts ) {
+		$atts = shortcode_atts( [ 'limit' => 20 ], $atts, 'outpost_account_feed' );
+
+		$handle = OUTPOST_Settings::get_brand_account();
+		if ( '' === $handle ) {
+			return '';
+		}
+
+		$posts      = OUTPOST_Feed_Fetcher::get_account_posts( (int) $atts['limit'] );
+		$branding   = OUTPOST_Settings::get_branding_html();
+		$heading_id = wp_unique_id( 'outpost-account-heading-' );
+
+		ob_start();
+		?>
+		<section class="outpost-feed" aria-labelledby="<?php echo esc_attr( $heading_id ); ?>">
+			<h2 class="outpost-feed__heading" id="<?php echo esc_attr( $heading_id ); ?>"><?php echo esc_html( '@' . $handle ); ?></h2>
+
+			<?php if ( empty( $posts ) ) : ?>
+				<p class="outpost-feed__empty"><?php esc_html_e( 'No posts found yet. Check back soon.', 'outpost' ); ?></p>
+			<?php else : ?>
+				<?php echo self::render_posts_list( $posts ); ?>
 			<?php endif; ?>
 
 			<?php if ( $branding ) : ?>
@@ -207,6 +215,53 @@ class OUTPOST_Shortcodes {
 				</form>
 			</div>
 		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Render the shared post-card list markup used by the hashtag and account feeds.
+	 *
+	 * @param array $posts
+	 * @return string
+	 */
+	private static function render_posts_list( $posts ) {
+		ob_start();
+		?>
+		<ul class="outpost-feed__list" role="list">
+			<?php foreach ( $posts as $post ) :
+				$text    = OUTPOST_Feed_Fetcher::post_to_plain_text( $post->content );
+				$date    = OUTPOST_Feed_Fetcher::format_date( $post->created_at );
+				$url     = esc_url( $post->url );
+				$account = isset( $post->account->acct ) ? '@' . esc_html( $post->account->acct ) : '';
+			?>
+			<li class="outpost-feed__item">
+				<article class="outpost-post">
+					<?php if ( $account ) : ?>
+					<h3 class="outpost-post__heading">
+						<?php printf( esc_html__( 'Post by %s', 'outpost' ), $account ); ?>
+					</h3>
+					<?php endif; ?>
+
+					<div class="outpost-post__content">
+						<?php echo wp_kses_post( wpautop( esc_html( $text ) ) ); ?>
+					</div>
+
+					<footer class="outpost-post__footer">
+						<?php if ( $date ) : ?>
+						<time class="outpost-post__date" datetime="<?php echo esc_attr( $post->created_at ); ?>">
+							<?php echo esc_html( $date ); ?>
+						</time>
+						<?php endif; ?>
+						<a class="outpost-post__link" href="<?php echo $url; ?>" target="_blank" rel="noopener noreferrer">
+							<?php esc_html_e( 'View on Mastodon', 'outpost' ); ?>
+							<span class="screen-reader-text"><?php esc_html_e( '(opens in new tab)', 'outpost' ); ?></span>
+						</a>
+					</footer>
+				</article>
+			</li>
+			<?php endforeach; ?>
+		</ul>
 		<?php
 		return ob_get_clean();
 	}

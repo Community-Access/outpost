@@ -81,6 +81,109 @@ class OUTPOST_Feed_Fetcher {
 	}
 
 	/**
+	 * Get the configured brand account's own posts (original posts only).
+	 *
+	 * @param int  $limit
+	 * @param bool $force
+	 * @return array Post objects, empty array on failure / no account.
+	 */
+	public static function get_account_posts( $limit = 20, $force = false ) {
+		$handle = OUTPOST_Settings::get_brand_account();
+		if ( '' === $handle || false === strpos( $handle, '@' ) ) {
+			return [];
+		}
+
+		list( $username, $host ) = explode( '@', $handle, 2 );
+		if ( '' === $username || '' === $host ) {
+			return [];
+		}
+
+		$cache_key = 'outpost_account_feed';
+
+		if ( ! $force ) {
+			$cached = get_transient( $cache_key );
+			if ( $cached !== false ) {
+				return array_slice( $cached, 0, $limit );
+			}
+		}
+
+		$account_id = self::resolve_account_id( $host, $username );
+		if ( ! $account_id ) {
+			$stale = get_transient( $cache_key );
+			return $stale ? array_slice( $stale, 0, $limit ) : [];
+		}
+
+		$url = 'https://' . $host . '/api/v1/accounts/' . rawurlencode( $account_id ) . '/statuses';
+		$url = add_query_arg(
+			[
+				'limit'           => 40,
+				'exclude_replies' => 'true',
+				'exclude_reblogs' => 'true',
+			],
+			$url
+		);
+
+		$posts = self::request_json( $url );
+		if ( is_wp_error( $posts ) || ! is_array( $posts ) ) {
+			$stale = get_transient( $cache_key );
+			return $stale ? array_slice( $stale, 0, $limit ) : [];
+		}
+
+		set_transient( $cache_key, $posts, OUTPOST_Settings::get_cache_duration() );
+		return array_slice( $posts, 0, $limit );
+	}
+
+	/**
+	 * Resolve and cache a Mastodon account id from its host + username.
+	 *
+	 * @param string $host
+	 * @param string $username
+	 * @return string|false
+	 */
+	private static function resolve_account_id( $host, $username ) {
+		$key    = 'outpost_account_id_' . md5( $host . '|' . $username );
+		$cached = get_transient( $key );
+		if ( $cached !== false ) {
+			return $cached;
+		}
+
+		$url     = 'https://' . $host . '/api/v1/accounts/lookup?acct=' . rawurlencode( $username );
+		$account = self::request_json( $url );
+		if ( is_wp_error( $account ) || ! isset( $account->id ) ) {
+			return false;
+		}
+
+		set_transient( $key, $account->id, DAY_IN_SECONDS );
+		return $account->id;
+	}
+
+	/**
+	 * Shared JSON GET against the Mastodon API.
+	 *
+	 * @param string $url
+	 * @return mixed|WP_Error Decoded JSON, or WP_Error on failure.
+	 */
+	private static function request_json( $url ) {
+		$response = wp_remote_get( $url, [
+			'timeout'    => 15,
+			'user-agent' => 'MastodonHashtagDigest/' . OUTPOST_VERSION . ' WordPress/' . get_bloginfo( 'version' ),
+		] );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+		if ( wp_remote_retrieve_response_code( $response ) !== 200 ) {
+			return new WP_Error( 'api_error', 'Non-200 from ' . $url );
+		}
+
+		$decoded = json_decode( wp_remote_retrieve_body( $response ) );
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			return new WP_Error( 'json_error', 'Invalid JSON from ' . $url );
+		}
+		return $decoded;
+	}
+
+	/**
 	 * Refresh caches for all active hashtags.
 	 */
 	public static function refresh_all_caches() {
@@ -88,6 +191,9 @@ class OUTPOST_Feed_Fetcher {
 		foreach ( $hashtags as $row ) {
 			self::get_posts( $row->id, 40, true );
 		}
+
+		// Keep the brand-account feed warm too.
+		self::get_account_posts( 40, true );
 	}
 
 	/**

@@ -81,6 +81,33 @@ Optional: set a limit on how many posts to show:
 
 ---
 
+## Displaying the account feed
+
+This shows recent original posts from a single Mastodon account (not filtered by
+hashtag). First set a **Brand account** in Settings, in the form
+`user@instance.social`. Then display it either way:
+
+### Using the block editor
+
+Add the **Mastodon Account Feed** block to any page or post and set how many
+posts to show.
+
+### Using the shortcode
+
+```
+[outpost_account_feed]
+```
+
+Optional: set a limit on how many posts to show:
+
+```
+[outpost_account_feed limit="10"]
+```
+
+If no brand account is configured in Settings, the feed renders nothing.
+
+---
+
 ## Displaying a subscribe form
 
 ```
