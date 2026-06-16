@@ -16,8 +16,8 @@ wp_clear_scheduled_hook( 'outpost_refresh_feed_cache' );
 wp_clear_scheduled_hook( 'outpost_digest_batch_event' );
 
 // 2. Delete all plugin transients (feed cache and digest staging).
-//    Keys are dynamic (per hashtag ID), so a direct LIKE query is simpler
-//    than looping over hashtag IDs after the table may already be dropped.
+// Keys are dynamic (per hashtag ID), so a direct LIKE query is simpler
+// than looping over hashtag IDs after the table may already be dropped.
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 $wpdb->query(
 	"DELETE FROM {$wpdb->options}
@@ -26,7 +26,7 @@ $wpdb->query(
 );
 
 // 3. Delete all plugin options.
-$options = [
+$outpost_options = array(
 	'outpost_show_setup_wizard',
 	'outpost_db_version',
 	'outpost_digest_send_hour',
@@ -41,14 +41,14 @@ $options = [
 	'outpost_double_optin',
 	'outpost_manage_page_id',
 	'outpost_brand_account',
-];
+);
 
-foreach ( $options as $option ) {
-	delete_option( $option );
+foreach ( $outpost_options as $outpost_option ) {
+	delete_option( $outpost_option );
 }
 
 // 4. Drop custom database tables.
-//    Drop in dependency order: log and subscribers reference hashtags.
+// Drop in dependency order: log and subscribers reference hashtags.
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange
 $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}outpost_digest_log" );
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange

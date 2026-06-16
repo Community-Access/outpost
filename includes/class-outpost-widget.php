@@ -11,10 +11,10 @@ class OUTPOST_Widget extends WP_Widget {
 		parent::__construct(
 			'outpost_feed_widget',
 			__( 'Mastodon Hashtag Feed', 'outpost' ),
-			[
+			array(
 				'description'                 => __( 'Display posts from a Mastodon hashtag with a subscribe form.', 'outpost' ),
 				'customize_selective_refresh' => true,
-			]
+			)
 		);
 	}
 
@@ -23,10 +23,10 @@ class OUTPOST_Widget extends WP_Widget {
 	// -------------------------------------------------------------------------
 
 	public function widget( $args, $instance ) {
-		$hashtag_id      = ! empty( $instance['hashtag_id'] ) ? (int) $instance['hashtag_id'] : 0;
-		$show_subscribe  = ! empty( $instance['show_subscribe'] );
-		$limit           = ! empty( $instance['limit'] ) ? (int) $instance['limit'] : 5;
-		$title           = ! empty( $instance['title'] ) ? $instance['title'] : '';
+		$hashtag_id     = ! empty( $instance['hashtag_id'] ) ? (int) $instance['hashtag_id'] : 0;
+		$show_subscribe = ! empty( $instance['show_subscribe'] );
+		$limit          = ! empty( $instance['limit'] ) ? (int) $instance['limit'] : 5;
+		$title          = ! empty( $instance['title'] ) ? $instance['title'] : '';
 
 		if ( ! $hashtag_id ) {
 			return;
@@ -40,9 +40,10 @@ class OUTPOST_Widget extends WP_Widget {
 		$posts    = OUTPOST_Feed_Fetcher::get_posts( $hashtag_id, $limit );
 		$branding = OUTPOST_Settings::get_branding_html();
 
-		echo $args['before_widget'];
+		echo $args['before_widget']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- theme-provided sidebar markup.
 
 		$widget_title = $title ?: '#' . $hashtag_row->hashtag;
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- before/after_title are theme markup; the title is escaped.
 		echo $args['before_title'] . esc_html( $widget_title ) . $args['after_title'];
 		?>
 
@@ -52,21 +53,22 @@ class OUTPOST_Widget extends WP_Widget {
 				<p class="outpost-widget-feed__empty"><?php esc_html_e( 'No posts yet.', 'outpost' ); ?></p>
 			<?php else : ?>
 				<ul class="outpost-widget-feed__list" role="list">
-					<?php foreach ( $posts as $post ) :
+					<?php
+					foreach ( $posts as $post ) :
 						$text = OUTPOST_Feed_Fetcher::post_to_plain_text( $post->content );
 						$date = OUTPOST_Feed_Fetcher::format_date( $post->created_at );
 						$url  = esc_url( $post->url );
 
 						// Truncate for widget display
 						$excerpt = mb_strlen( $text ) > 160 ? mb_substr( $text, 0, 157 ) . '...' : $text;
-					?>
+						?>
 					<li class="outpost-widget-feed__item">
 						<p class="outpost-widget-feed__text"><?php echo esc_html( $excerpt ); ?></p>
 						<div class="outpost-widget-feed__meta">
 							<?php if ( $date ) : ?>
 							<time datetime="<?php echo esc_attr( $post->created_at ); ?>"><?php echo esc_html( $date ); ?></time>
 							<?php endif; ?>
-							<a href="<?php echo $url; ?>" target="_blank" rel="noopener noreferrer">
+							<a href="<?php echo $url; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $url is esc_url()'d above. ?>" target="_blank" rel="noopener noreferrer">
 								<?php esc_html_e( 'View post', 'outpost' ); ?>
 								<span class="screen-reader-text"><?php esc_html_e( '(opens in new tab)', 'outpost' ); ?></span>
 							</a>
@@ -76,20 +78,22 @@ class OUTPOST_Widget extends WP_Widget {
 				</ul>
 			<?php endif; ?>
 
-			<?php if ( $show_subscribe ) :
+			<?php
+			if ( $show_subscribe ) :
 				echo do_shortcode( '[outpost_subscribe tag="' . esc_attr( $hashtag_row->hashtag ) . '"]' );
-			endif; ?>
+			endif;
+			?>
 
 			<?php if ( $branding ) : ?>
 			<div class="outpost-widget-feed__branding">
-				<?php echo $branding; ?>
+				<?php echo $branding; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped by get_branding_html(). ?>
 			</div>
 			<?php endif; ?>
 
 		</div>
 
 		<?php
-		echo $args['after_widget'];
+		echo $args['after_widget']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- theme-provided sidebar markup.
 	}
 
 	// -------------------------------------------------------------------------
@@ -170,11 +174,11 @@ class OUTPOST_Widget extends WP_Widget {
 	// -------------------------------------------------------------------------
 
 	public function update( $new_instance, $old_instance ) {
-		return [
+		return array(
 			'title'          => sanitize_text_field( $new_instance['title'] ),
 			'hashtag_id'     => absint( $new_instance['hashtag_id'] ),
 			'limit'          => min( 20, max( 1, absint( $new_instance['limit'] ) ) ),
 			'show_subscribe' => ! empty( $new_instance['show_subscribe'] ),
-		];
+		);
 	}
 }

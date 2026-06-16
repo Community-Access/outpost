@@ -10,13 +10,13 @@
 class OUTPOST_Shortcodes {
 
 	public static function init() {
-		add_shortcode( 'outpost_feed',         [ __CLASS__, 'render_feed' ] );
-		add_shortcode( 'outpost_account_feed', [ __CLASS__, 'render_account_feed' ] );
-		add_shortcode( 'outpost_subscribe',    [ __CLASS__, 'render_subscribe_form' ] );
+		add_shortcode( 'outpost_feed', array( __CLASS__, 'render_feed' ) );
+		add_shortcode( 'outpost_account_feed', array( __CLASS__, 'render_account_feed' ) );
+		add_shortcode( 'outpost_subscribe', array( __CLASS__, 'render_subscribe_form' ) );
 
-		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
-		add_action( 'wp_ajax_nopriv_outpost_subscribe', [ __CLASS__, 'handle_subscribe_ajax' ] );
-		add_action( 'wp_ajax_outpost_subscribe',        [ __CLASS__, 'handle_subscribe_ajax' ] );
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
+		add_action( 'wp_ajax_nopriv_outpost_subscribe', array( __CLASS__, 'handle_subscribe_ajax' ) );
+		add_action( 'wp_ajax_outpost_subscribe', array( __CLASS__, 'handle_subscribe_ajax' ) );
 	}
 
 	// -------------------------------------------------------------------------
@@ -27,10 +27,14 @@ class OUTPOST_Shortcodes {
 	 * [outpost_feed tag="bitstips" limit="20"]
 	 */
 	public static function render_feed( $atts ) {
-		$atts = shortcode_atts( [
-			'tag'   => '',
-			'limit' => 20,
-		], $atts, 'outpost_feed' );
+		$atts = shortcode_atts(
+			array(
+				'tag'   => '',
+				'limit' => 20,
+			),
+			$atts,
+			'outpost_feed'
+		);
 
 		$tag = OUTPOST_Hashtag_Manager::normalize_tag( $atts['tag'] );
 		if ( ! $tag ) {
@@ -39,16 +43,18 @@ class OUTPOST_Shortcodes {
 
 		// Find the hashtag row - use first match (any instance)
 		global $wpdb;
-		$hashtag_row = $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}outpost_hashtags WHERE hashtag = %s AND active = 1 LIMIT 1",
-			$tag
-		) );
+		$hashtag_row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}outpost_hashtags WHERE hashtag = %s AND active = 1 LIMIT 1",
+				$tag
+			)
+		);
 
 		if ( ! $hashtag_row ) {
 			return '<p class="outpost-error">' . esc_html__( 'Hashtag not found or not active.', 'outpost' ) . '</p>';
 		}
 
-		$posts = OUTPOST_Feed_Fetcher::get_posts( $hashtag_row->id, (int) $atts['limit'] );
+		$posts    = OUTPOST_Feed_Fetcher::get_posts( $hashtag_row->id, (int) $atts['limit'] );
 		$branding = OUTPOST_Settings::get_branding_html();
 
 		// Unique per render so multiple feeds for the same hashtag on one page do
@@ -63,12 +69,12 @@ class OUTPOST_Shortcodes {
 			<?php if ( empty( $posts ) ) : ?>
 				<p class="outpost-feed__empty"><?php esc_html_e( 'No posts found yet. Check back soon.', 'outpost' ); ?></p>
 			<?php else : ?>
-				<?php echo self::render_posts_list( $posts ); ?>
+				<?php echo self::render_posts_list( $posts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped within the helper. ?>
 			<?php endif; ?>
 
 			<?php if ( $branding ) : ?>
 			<div class="outpost-feed__branding">
-				<?php echo $branding; ?>
+				<?php echo $branding; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped by get_branding_html(). ?>
 			</div>
 			<?php endif; ?>
 		</section>
@@ -84,7 +90,7 @@ class OUTPOST_Shortcodes {
 	 * [outpost_account_feed limit="20"]
 	 */
 	public static function render_account_feed( $atts ) {
-		$atts = shortcode_atts( [ 'limit' => 20 ], $atts, 'outpost_account_feed' );
+		$atts = shortcode_atts( array( 'limit' => 20 ), $atts, 'outpost_account_feed' );
 
 		$handle = OUTPOST_Settings::get_brand_account();
 		if ( '' === $handle ) {
@@ -103,12 +109,12 @@ class OUTPOST_Shortcodes {
 			<?php if ( empty( $posts ) ) : ?>
 				<p class="outpost-feed__empty"><?php esc_html_e( 'No posts found yet. Check back soon.', 'outpost' ); ?></p>
 			<?php else : ?>
-				<?php echo self::render_posts_list( $posts ); ?>
+				<?php echo self::render_posts_list( $posts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped within the helper. ?>
 			<?php endif; ?>
 
 			<?php if ( $branding ) : ?>
 			<div class="outpost-feed__branding">
-				<?php echo $branding; ?>
+				<?php echo $branding; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped by get_branding_html(). ?>
 			</div>
 			<?php endif; ?>
 		</section>
@@ -124,7 +130,7 @@ class OUTPOST_Shortcodes {
 	 * [outpost_subscribe tag="bitstips"]
 	 */
 	public static function render_subscribe_form( $atts ) {
-		$atts = shortcode_atts( [ 'tag' => '' ], $atts, 'outpost_subscribe' );
+		$atts = shortcode_atts( array( 'tag' => '' ), $atts, 'outpost_subscribe' );
 
 		$tag = OUTPOST_Hashtag_Manager::normalize_tag( $atts['tag'] );
 		if ( ! $tag ) {
@@ -132,10 +138,12 @@ class OUTPOST_Shortcodes {
 		}
 
 		global $wpdb;
-		$hashtag_row = $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}outpost_hashtags WHERE hashtag = %s AND active = 1 LIMIT 1",
-			$tag
-		) );
+		$hashtag_row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}outpost_hashtags WHERE hashtag = %s AND active = 1 LIMIT 1",
+				$tag
+			)
+		);
 
 		if ( ! $hashtag_row ) {
 			return '<p class="outpost-error">' . esc_html__( 'This subscription is not available.', 'outpost' ) . '</p>';
@@ -229,17 +237,18 @@ class OUTPOST_Shortcodes {
 		ob_start();
 		?>
 		<ul class="outpost-feed__list" role="list">
-			<?php foreach ( $posts as $post ) :
+			<?php
+			foreach ( $posts as $post ) :
 				$text    = OUTPOST_Feed_Fetcher::post_to_plain_text( $post->content );
 				$date    = OUTPOST_Feed_Fetcher::format_date( $post->created_at );
 				$url     = esc_url( $post->url );
 				$account = isset( $post->account->acct ) ? '@' . esc_html( $post->account->acct ) : '';
-			?>
+				?>
 			<li class="outpost-feed__item">
 				<article class="outpost-post">
 					<?php if ( $account ) : ?>
 					<h3 class="outpost-post__heading">
-						<?php printf( esc_html__( 'Post by %s', 'outpost' ), $account ); ?>
+						<?php printf( esc_html__( 'Post by %s', 'outpost' ), $account ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $account is pre-escaped above. ?>
 					</h3>
 					<?php endif; ?>
 
@@ -253,7 +262,7 @@ class OUTPOST_Shortcodes {
 							<?php echo esc_html( $date ); ?>
 						</time>
 						<?php endif; ?>
-						<a class="outpost-post__link" href="<?php echo $url; ?>" target="_blank" rel="noopener noreferrer">
+						<a class="outpost-post__link" href="<?php echo $url; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $url is esc_url()'d above. ?>" target="_blank" rel="noopener noreferrer">
 							<?php esc_html_e( 'View on Mastodon', 'outpost' ); ?>
 							<span class="screen-reader-text"><?php esc_html_e( '(opens in new tab)', 'outpost' ); ?></span>
 						</a>
@@ -278,7 +287,7 @@ class OUTPOST_Shortcodes {
 		// success so bots get no signal, but do not process the request.
 		$hp = isset( $_POST['outpost_hp_check'] ) ? trim( wp_unslash( $_POST['outpost_hp_check'] ) ) : '';
 		if ( '' !== $hp ) {
-			wp_send_json_success( [ 'message' => __( 'Thanks! Please check your email.', 'outpost' ) ] );
+			wp_send_json_success( array( 'message' => __( 'Thanks! Please check your email.', 'outpost' ) ) );
 		}
 
 		// Rate limit per IP so the endpoint cannot be used to send confirmation
@@ -288,26 +297,26 @@ class OUTPOST_Shortcodes {
 			$rl_key = 'outpost_sub_rl_' . md5( $ip );
 			$count  = (int) get_transient( $rl_key );
 			if ( $count >= 5 ) {
-				wp_send_json_error( [ 'message' => __( 'Too many attempts. Please wait a few minutes and try again.', 'outpost' ) ] );
+				wp_send_json_error( array( 'message' => __( 'Too many attempts. Please wait a few minutes and try again.', 'outpost' ) ) );
 			}
 			set_transient( $rl_key, $count + 1, 10 * MINUTE_IN_SECONDS );
 		}
 
 		$hashtag_id = isset( $_POST['hashtag_id'] ) ? (int) $_POST['hashtag_id'] : 0;
-		$email      = isset( $_POST['email'] )      ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
-		$name       = isset( $_POST['name'] )       ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
+		$email      = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
+		$name       = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
 
 		$result = OUTPOST_Subscriber::subscribe( $hashtag_id, $email, $name );
 
 		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
 		}
 
 		$message = OUTPOST_Settings::is_double_optin()
 			? __( 'Almost there! Check your email and click the confirmation link to complete your subscription.', 'outpost' )
 			: __( 'You are subscribed. Your first digest will arrive tomorrow morning.', 'outpost' );
 
-		wp_send_json_success( [ 'message' => $message ] );
+		wp_send_json_success( array( 'message' => $message ) );
 	}
 
 	// -------------------------------------------------------------------------
@@ -318,21 +327,25 @@ class OUTPOST_Shortcodes {
 		wp_enqueue_style(
 			'outpost-public',
 			OUTPOST_PLUGIN_URL . 'public/outpost-public.css',
-			[],
+			array(),
 			OUTPOST_VERSION
 		);
 
 		wp_enqueue_script(
 			'outpost-public',
 			OUTPOST_PLUGIN_URL . 'public/outpost-public.js',
-			[ 'jquery' ],
+			array( 'jquery' ),
 			OUTPOST_VERSION,
 			true
 		);
 
-		wp_localize_script( 'outpost-public', 'outpostData', [
-			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-			'nonce'   => wp_create_nonce( 'outpost_subscribe_nonce' ),
-		] );
+		wp_localize_script(
+			'outpost-public',
+			'outpostData',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'outpost_subscribe_nonce' ),
+			)
+		);
 	}
 }

@@ -1,4 +1,5 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
+<?php if ( ! defined( 'ABSPATH' ) ) {
+	exit;} ?>
 <div class="wrap outpost-admin">
 	<h1><?php esc_html_e( 'OutPost: Setup', 'outpost' ); ?></h1>
 

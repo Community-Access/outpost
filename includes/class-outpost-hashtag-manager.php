@@ -23,8 +23,10 @@ class OUTPOST_Hashtag_Manager {
 		$table = $wpdb->prefix . 'outpost_hashtags';
 
 		if ( $active_only ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is a trusted, code-derived table name.
 			return $wpdb->get_results( "SELECT * FROM $table WHERE active = 1 ORDER BY hashtag ASC" );
 		}
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is a trusted, code-derived table name.
 		return $wpdb->get_results( "SELECT * FROM $table ORDER BY hashtag ASC" );
 	}
 
@@ -37,6 +39,7 @@ class OUTPOST_Hashtag_Manager {
 	public static function get( $id ) {
 		global $wpdb;
 		$table = $wpdb->prefix . 'outpost_hashtags';
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is a trusted, code-derived table name; values are placeheld.
 		return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", $id ) );
 	}
 
@@ -50,11 +53,14 @@ class OUTPOST_Hashtag_Manager {
 	public static function get_by_tag( $hashtag, $instance_url ) {
 		global $wpdb;
 		$table = $wpdb->prefix . 'outpost_hashtags';
-		return $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM $table WHERE hashtag = %s AND instance_url = %s",
-			self::normalize_tag( $hashtag ),
-			self::normalize_instance( $instance_url )
-		) );
+		return $wpdb->get_row(
+			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is a trusted, code-derived table name; values are placeheld.
+				"SELECT * FROM $table WHERE hashtag = %s AND instance_url = %s",
+				self::normalize_tag( $hashtag ),
+				self::normalize_instance( $instance_url )
+			)
+		);
 	}
 
 	// -------------------------------------------------------------------------
@@ -90,14 +96,14 @@ class OUTPOST_Hashtag_Manager {
 
 		$result = $wpdb->insert(
 			$wpdb->prefix . 'outpost_hashtags',
-			[
+			array(
 				'hashtag'        => $hashtag,
 				'instance_url'   => $instance_url,
 				'label'          => sanitize_text_field( $label ?: '#' . $hashtag ),
 				'account_filter' => self::normalize_handle( $account_filter ),
 				'active'         => 1,
-			],
-			[ '%s', '%s', '%s', '%s', '%d' ]
+			),
+			array( '%s', '%s', '%s', '%s', '%d' )
 		);
 
 		if ( $result === false ) {
@@ -110,14 +116,14 @@ class OUTPOST_Hashtag_Manager {
 	/**
 	 * Update an existing hashtag configuration.
 	 *
-	 * @param int    $id
-	 * @param array  $data  Keys: hashtag, instance_url, label, active.
+	 * @param int   $id
+	 * @param array $data  Keys: hashtag, instance_url, label, active.
 	 * @return bool|WP_Error
 	 */
 	public static function update( $id, array $data ) {
 		global $wpdb;
 
-		$allowed = [];
+		$allowed = array();
 
 		if ( isset( $data['hashtag'] ) ) {
 			$allowed['hashtag'] = self::normalize_tag( $data['hashtag'] );
@@ -142,7 +148,7 @@ class OUTPOST_Hashtag_Manager {
 		$result = $wpdb->update(
 			$wpdb->prefix . 'outpost_hashtags',
 			$allowed,
-			[ 'id' => (int) $id ]
+			array( 'id' => (int) $id )
 		);
 
 		return ( $result !== false );
@@ -160,13 +166,13 @@ class OUTPOST_Hashtag_Manager {
 		$id = (int) $id;
 
 		// Delete subscribers
-		$wpdb->delete( $wpdb->prefix . 'outpost_subscribers', [ 'hashtag_id' => $id ], [ '%d' ] );
+		$wpdb->delete( $wpdb->prefix . 'outpost_subscribers', array( 'hashtag_id' => $id ), array( '%d' ) );
 
 		// Delete digest log
-		$wpdb->delete( $wpdb->prefix . 'outpost_digest_log', [ 'hashtag_id' => $id ], [ '%d' ] );
+		$wpdb->delete( $wpdb->prefix . 'outpost_digest_log', array( 'hashtag_id' => $id ), array( '%d' ) );
 
 		// Delete hashtag
-		return (bool) $wpdb->delete( $wpdb->prefix . 'outpost_hashtags', [ 'id' => $id ], [ '%d' ] );
+		return (bool) $wpdb->delete( $wpdb->prefix . 'outpost_hashtags', array( 'id' => $id ), array( '%d' ) );
 	}
 
 	// -------------------------------------------------------------------------

@@ -14,8 +14,8 @@
 class OUTPOST_Email_Digest {
 
 	public static function init() {
-		add_action( 'outpost_daily_digest_event', [ __CLASS__, 'start_all_digests' ] );
-		add_action( 'outpost_digest_batch_event',  [ __CLASS__, 'process_batch' ] );
+		add_action( 'outpost_daily_digest_event', array( __CLASS__, 'start_all_digests' ) );
+		add_action( 'outpost_digest_batch_event', array( __CLASS__, 'process_batch' ) );
 	}
 
 	// -------------------------------------------------------------------------
@@ -50,7 +50,7 @@ class OUTPOST_Email_Digest {
 			wp_schedule_single_event(
 				time(),
 				'outpost_digest_batch_event',
-				[ $hashtag_row->id, 0 ]
+				array( $hashtag_row->id, 0 )
 			);
 		}
 	}
@@ -66,9 +66,9 @@ class OUTPOST_Email_Digest {
 	 * @param int $offset     Subscriber offset for this batch.
 	 */
 	public static function process_batch( $hashtag_id, $offset ) {
-		$hashtag_id  = (int) $hashtag_id;
-		$offset      = (int) $offset;
-		$batch_size  = (int) get_option( 'outpost_digest_batch_size', 50 );
+		$hashtag_id = (int) $hashtag_id;
+		$offset     = (int) $offset;
+		$batch_size = (int) get_option( 'outpost_digest_batch_size', 50 );
 
 		$hashtag_row = OUTPOST_Hashtag_Manager::get( $hashtag_id );
 		if ( ! $hashtag_row ) {
@@ -102,7 +102,7 @@ class OUTPOST_Email_Digest {
 			wp_schedule_single_event(
 				time() + 30, // 30-second gap between batches
 				'outpost_digest_batch_event',
-				[ $hashtag_id, $offset + $batch_size ]
+				array( $hashtag_id, $offset + $batch_size )
 			);
 		} else {
 			// Last batch — log posts and clean up
@@ -147,7 +147,7 @@ class OUTPOST_Email_Digest {
 		wp_schedule_single_event(
 			time(),
 			'outpost_digest_batch_event',
-			[ $hashtag_id, 0 ]
+			array( $hashtag_id, 0 )
 		);
 
 		return count( $subscribers );
@@ -168,17 +168,22 @@ class OUTPOST_Email_Digest {
 
 		$posts = OUTPOST_Feed_Fetcher::get_posts_since_yesterday( $hashtag_row->id );
 		if ( empty( $posts ) ) {
-			return [];
+			return array();
 		}
 
-		$sent_uris = $wpdb->get_col( $wpdb->prepare(
-			"SELECT post_uri FROM {$wpdb->prefix}outpost_digest_log WHERE hashtag_id = %d",
-			$hashtag_row->id
-		) );
+		$sent_uris = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT post_uri FROM {$wpdb->prefix}outpost_digest_log WHERE hashtag_id = %d",
+				$hashtag_row->id
+			)
+		);
 
-		$new_posts = array_filter( $posts, function ( $post ) use ( $sent_uris ) {
-			return ! in_array( $post->uri, $sent_uris, true );
-		} );
+		$new_posts = array_filter(
+			$posts,
+			function ( $post ) use ( $sent_uris ) {
+				return ! in_array( $post->uri, $sent_uris, true );
+			}
+		);
 
 		return array_slice(
 			array_values( $new_posts ),
@@ -197,15 +202,17 @@ class OUTPOST_Email_Digest {
 	 */
 	private static function get_subscriber_batch( $hashtag_id, $offset, $limit ) {
 		global $wpdb;
-		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}outpost_subscribers
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}outpost_subscribers
 			 WHERE hashtag_id = %d AND status = 'confirmed'
 			 ORDER BY id ASC
 			 LIMIT %d OFFSET %d",
-			(int) $hashtag_id,
-			(int) $limit,
-			(int) $offset
-		) );
+				(int) $hashtag_id,
+				(int) $limit,
+				(int) $offset
+			)
+		);
 	}
 
 	/**
@@ -243,11 +250,11 @@ class OUTPOST_Email_Digest {
 		foreach ( $posts as $post ) {
 			$wpdb->replace(
 				$wpdb->prefix . 'outpost_digest_log',
-				[
+				array(
 					'hashtag_id' => (int) $hashtag_id,
 					'post_uri'   => esc_url_raw( $post->uri ),
-				],
-				[ '%d', '%s' ]
+				),
+				array( '%d', '%s' )
 			);
 		}
 	}

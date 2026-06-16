@@ -5,8 +5,8 @@
 class OUTPOST_Subscriber {
 
 	public static function init() {
-		add_action( 'init', [ __CLASS__, 'handle_token_actions' ] );
-		add_action( 'init', [ __CLASS__, 'handle_unsubscribe_post' ] );
+		add_action( 'init', array( __CLASS__, 'handle_token_actions' ) );
+		add_action( 'init', array( __CLASS__, 'handle_unsubscribe_post' ) );
 	}
 
 	// -------------------------------------------------------------------------
@@ -37,10 +37,13 @@ class OUTPOST_Subscriber {
 		}
 
 		// Check existing subscription
-		$existing = $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}outpost_subscribers WHERE email = %s AND hashtag_id = %d",
-			$email, $hashtag_id
-		) );
+		$existing = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}outpost_subscribers WHERE email = %s AND hashtag_id = %d",
+				$email,
+				$hashtag_id
+			)
+		);
 
 		if ( $existing ) {
 			if ( $existing->status === 'confirmed' ) {
@@ -50,13 +53,18 @@ class OUTPOST_Subscriber {
 				// Re-subscribe
 				$wpdb->update(
 					$wpdb->prefix . 'outpost_subscribers',
-					[ 'status' => 'pending', 'token' => self::generate_token() ],
-					[ 'id' => $existing->id ]
+					array(
+						'status' => 'pending',
+						'token'  => self::generate_token(),
+					),
+					array( 'id' => $existing->id )
 				);
-				$existing = $wpdb->get_row( $wpdb->prepare(
-					"SELECT * FROM {$wpdb->prefix}outpost_subscribers WHERE id = %d",
-					$existing->id
-				) );
+				$existing = $wpdb->get_row(
+					$wpdb->prepare(
+						"SELECT * FROM {$wpdb->prefix}outpost_subscribers WHERE id = %d",
+						$existing->id
+					)
+				);
 			}
 			// Resend confirmation
 			self::send_confirmation_email( $existing, $hashtag_row );
@@ -68,25 +76,27 @@ class OUTPOST_Subscriber {
 
 		$result = $wpdb->insert(
 			$wpdb->prefix . 'outpost_subscribers',
-			[
+			array(
 				'hashtag_id'   => $hashtag_id,
 				'email'        => $email,
 				'name'         => sanitize_text_field( $name ),
 				'status'       => $status,
 				'token'        => $token,
 				'confirmed_at' => ( $status === 'confirmed' ) ? current_time( 'mysql' ) : null,
-			],
-			[ '%d', '%s', '%s', '%s', '%s', '%s' ]
+			),
+			array( '%d', '%s', '%s', '%s', '%s', '%s' )
 		);
 
 		if ( $result === false ) {
 			return new WP_Error( 'db_error', __( 'Could not save subscription. Please try again.', 'outpost' ) );
 		}
 
-		$subscriber = $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}outpost_subscribers WHERE id = %d",
-			$wpdb->insert_id
-		) );
+		$subscriber = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}outpost_subscribers WHERE id = %d",
+				$wpdb->insert_id
+			)
+		);
 
 		if ( OUTPOST_Settings::is_double_optin() ) {
 			self::send_confirmation_email( $subscriber, $hashtag_row );
@@ -117,8 +127,11 @@ class OUTPOST_Subscriber {
 
 		$wpdb->update(
 			$wpdb->prefix . 'outpost_subscribers',
-			[ 'status' => 'confirmed', 'confirmed_at' => current_time( 'mysql' ) ],
-			[ 'id' => $subscriber->id ]
+			array(
+				'status'       => 'confirmed',
+				'confirmed_at' => current_time( 'mysql' ),
+			),
+			array( 'id' => $subscriber->id )
 		);
 
 		$hashtag_row = OUTPOST_Hashtag_Manager::get( $subscriber->hashtag_id );
@@ -143,8 +156,8 @@ class OUTPOST_Subscriber {
 
 		$wpdb->update(
 			$wpdb->prefix . 'outpost_subscribers',
-			[ 'status' => 'unsubscribed' ],
-			[ 'id' => $subscriber->id ]
+			array( 'status' => 'unsubscribed' ),
+			array( 'id' => $subscriber->id )
 		);
 
 		return true;
@@ -160,7 +173,7 @@ class OUTPOST_Subscriber {
 	 */
 	public static function handle_token_actions() {
 		$action = isset( $_GET['outpost_action'] ) ? sanitize_key( wp_unslash( $_GET['outpost_action'] ) ) : '';
-		$token  = isset( $_GET['outpost_token'] )  ? sanitize_text_field( wp_unslash( $_GET['outpost_token'] ) ) : '';
+		$token  = isset( $_GET['outpost_token'] ) ? sanitize_text_field( wp_unslash( $_GET['outpost_token'] ) ) : '';
 
 		if ( ! $action || ! $token ) {
 			return;
@@ -184,13 +197,15 @@ class OUTPOST_Subscriber {
 			// the user to a confirmation form that completes the action via POST.
 			// add_query_arg() already URL-encodes values, so pass the raw token to
 			// avoid double-encoding it.
-			wp_safe_redirect( add_query_arg(
-				[
-					'outpost_status' => 'confirm_unsub',
-					'outpost_token'  => $token,
-				],
-				$manage_page
-			) );
+			wp_safe_redirect(
+				add_query_arg(
+					array(
+						'outpost_status' => 'confirm_unsub',
+						'outpost_token'  => $token,
+					),
+					$manage_page
+				)
+			);
 			exit;
 		}
 	}
@@ -231,10 +246,12 @@ class OUTPOST_Subscriber {
 	 */
 	public static function get_confirmed( $hashtag_id ) {
 		global $wpdb;
-		return $wpdb->get_results( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}outpost_subscribers WHERE hashtag_id = %d AND status = 'confirmed'",
-			(int) $hashtag_id
-		) );
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}outpost_subscribers WHERE hashtag_id = %d AND status = 'confirmed'",
+				(int) $hashtag_id
+			)
+		);
 	}
 
 	/**
@@ -245,10 +262,12 @@ class OUTPOST_Subscriber {
 	 */
 	public static function get_by_token( $token ) {
 		global $wpdb;
-		return $wpdb->get_row( $wpdb->prepare(
-			"SELECT * FROM {$wpdb->prefix}outpost_subscribers WHERE token = %s",
-			sanitize_text_field( $token )
-		) );
+		return $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}outpost_subscribers WHERE token = %s",
+				sanitize_text_field( $token )
+			)
+		);
 	}
 
 	/**
@@ -261,15 +280,20 @@ class OUTPOST_Subscriber {
 	public static function count( $hashtag_id, $status = 'confirmed' ) {
 		global $wpdb;
 		if ( $status === 'all' ) {
-			return (int) $wpdb->get_var( $wpdb->prepare(
-				"SELECT COUNT(*) FROM {$wpdb->prefix}outpost_subscribers WHERE hashtag_id = %d",
-				(int) $hashtag_id
-			) );
+			return (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM {$wpdb->prefix}outpost_subscribers WHERE hashtag_id = %d",
+					(int) $hashtag_id
+				)
+			);
 		}
-		return (int) $wpdb->get_var( $wpdb->prepare(
-			"SELECT COUNT(*) FROM {$wpdb->prefix}outpost_subscribers WHERE hashtag_id = %d AND status = %s",
-			(int) $hashtag_id, $status
-		) );
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}outpost_subscribers WHERE hashtag_id = %d AND status = %s",
+				(int) $hashtag_id,
+				$status
+			)
+		);
 	}
 
 	// -------------------------------------------------------------------------
@@ -283,10 +307,13 @@ class OUTPOST_Subscriber {
 	 * @return string
 	 */
 	public static function confirmation_url( $subscriber ) {
-		return add_query_arg( [
-			'outpost_action' => 'confirm',
-			'outpost_token'  => $subscriber->token,
-		], home_url() );
+		return add_query_arg(
+			array(
+				'outpost_action' => 'confirm',
+				'outpost_token'  => $subscriber->token,
+			),
+			home_url()
+		);
 	}
 
 	/**
@@ -296,10 +323,13 @@ class OUTPOST_Subscriber {
 	 * @return string
 	 */
 	public static function unsubscribe_url( $subscriber ) {
-		return add_query_arg( [
-			'outpost_action' => 'unsubscribe',
-			'outpost_token'  => $subscriber->token,
-		], home_url() );
+		return add_query_arg(
+			array(
+				'outpost_action' => 'unsubscribe',
+				'outpost_token'  => $subscriber->token,
+			),
+			home_url()
+		);
 	}
 
 	/**
@@ -344,10 +374,10 @@ class OUTPOST_Subscriber {
 	 * Send an email using wp_mail() (routes through Postmark or configured mailer).
 	 */
 	public static function send_email( $to, $subject, $html_body ) {
-		$headers = [
+		$headers = array(
 			'Content-Type: text/html; charset=UTF-8',
 			'From: ' . OUTPOST_Settings::get_from_name() . ' <' . OUTPOST_Settings::get_from_email() . '>',
-		];
+		);
 
 		wp_mail( $to, $subject, $html_body, $headers );
 	}

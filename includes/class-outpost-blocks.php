@@ -9,30 +9,40 @@
 class OUTPOST_Blocks {
 
 	public static function init() {
-		add_action( 'init', [ __CLASS__, 'register_blocks' ] );
-		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'enqueue_editor_assets' ] );
+		add_action( 'init', array( __CLASS__, 'register_blocks' ) );
+		add_action( 'enqueue_block_editor_assets', array( __CLASS__, 'enqueue_editor_assets' ) );
 	}
 
 	/**
 	 * Register block types from their block.json metadata.
 	 */
 	public static function register_blocks() {
-		register_block_type( OUTPOST_PLUGIN_DIR . 'blocks/feed', [
-			'render_callback' => [ __CLASS__, 'render_feed_block' ],
-		] );
+		register_block_type(
+			OUTPOST_PLUGIN_DIR . 'blocks/feed',
+			array(
+				'render_callback' => array( __CLASS__, 'render_feed_block' ),
+			)
+		);
 
-		register_block_type( OUTPOST_PLUGIN_DIR . 'blocks/account-feed', [
-			'render_callback' => [ __CLASS__, 'render_account_feed_block' ],
-		] );
+		register_block_type(
+			OUTPOST_PLUGIN_DIR . 'blocks/account-feed',
+			array(
+				'render_callback' => array( __CLASS__, 'render_account_feed_block' ),
+			)
+		);
 	}
 
 	/**
 	 * Make hashtag options available to the block editor.
 	 */
 	public static function enqueue_editor_assets() {
-		wp_localize_script( 'outpost-feed-editor-script', 'outpostBlockData', [
-			'hashtagOptions' => self::get_hashtag_options( OUTPOST_Hashtag_Manager::get_all( true ) ),
-		] );
+		wp_localize_script(
+			'outpost-feed-editor-script',
+			'outpostBlockData',
+			array(
+				'hashtagOptions' => self::get_hashtag_options( OUTPOST_Hashtag_Manager::get_all( true ) ),
+			)
+		);
 	}
 
 	/**
@@ -77,15 +87,18 @@ class OUTPOST_Blocks {
 	 * @return array[] List of [ 'label' => string, 'value' => string ].
 	 */
 	public static function get_hashtag_options( array $hashtag_rows ) {
-		$options = [
-			[ 'label' => __( 'Select a hashtag…', 'outpost' ), 'value' => '' ],
-		];
+		$options = array(
+			array(
+				'label' => __( 'Select a hashtag…', 'outpost' ),
+				'value' => '',
+			),
+		);
 
 		foreach ( $hashtag_rows as $row ) {
-			$options[] = [
+			$options[] = array(
 				'label' => ! empty( $row->label ) ? $row->label : '#' . $row->hashtag,
 				'value' => $row->hashtag,
-			];
+			);
 		}
 
 		return $options;

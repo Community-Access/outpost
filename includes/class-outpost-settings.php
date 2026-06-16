@@ -99,7 +99,7 @@ class OUTPOST_Settings {
 	 * Sanitize and save settings from the admin form.
 	 */
 	public static function save( array $data ) {
-		$allowed_keys = [
+		$allowed_keys = array(
 			'outpost_from_name',
 			'outpost_from_email',
 			'outpost_digest_send_hour',
@@ -112,7 +112,7 @@ class OUTPOST_Settings {
 			'outpost_branding_url',
 			'outpost_manage_page_id',
 			'outpost_brand_account',
-		];
+		);
 
 		foreach ( $allowed_keys as $key ) {
 			if ( ! array_key_exists( $key, $data ) ) {
