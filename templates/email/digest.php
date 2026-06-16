@@ -57,13 +57,13 @@
 
 	<hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
 
-	<footer style="font-size: 13px; color: #888;">
+	<footer style="font-size: 13px; color: #595959;">
 		<?php if ( $branding_html ) : ?>
 		<p><?php echo $branding_html; ?></p>
 		<?php endif; ?>
 		<p>
 			<?php esc_html_e( 'You are receiving this because you subscribed to this digest.', 'outpost' ); ?>
-			<a href="<?php echo esc_url( $unsubscribe_url ); ?>" style="color: #888;">
+			<a href="<?php echo esc_url( $unsubscribe_url ); ?>" style="color: #595959;">
 				<?php esc_html_e( 'Unsubscribe', 'outpost' ); ?>
 			</a>
 		</p>
