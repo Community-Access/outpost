@@ -57,6 +57,9 @@ function outpost_init() {
 	// Load translations
 	load_plugin_textdomain( 'outpost', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 
+	// Run any pending schema upgrades for already-installed sites.
+	OUTPOST_Activator::maybe_upgrade();
+
 	// Core services
 	OUTPOST_Settings::init();
 	OUTPOST_Hashtag_Manager::init();

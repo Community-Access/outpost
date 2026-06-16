@@ -50,6 +50,7 @@ class OUTPOST_Activator {
 			hashtag       VARCHAR(255)        NOT NULL,
 			instance_url  VARCHAR(500)        NOT NULL DEFAULT 'https://mastodon.social',
 			label         VARCHAR(255)        NOT NULL DEFAULT '',
+			account_filter VARCHAR(255)       NOT NULL DEFAULT '',
 			active        TINYINT(1)          NOT NULL DEFAULT 1,
 			created_at    DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (id),
@@ -89,7 +90,21 @@ class OUTPOST_Activator {
 		dbDelta( $sql_subscribers );
 		dbDelta( $sql_digest_log );
 
-		update_option( 'outpost_db_version', '1.0.0' );
+		update_option( 'outpost_db_version', '1.1.0' );
+	}
+
+	/**
+	 * Run schema upgrades for already-installed sites. Idempotent.
+	 */
+	public static function maybe_upgrade() {
+		$installed = get_option( 'outpost_db_version' );
+		if ( $installed && version_compare( $installed, '1.1.0', '>=' ) ) {
+			return;
+		}
+		// create_tables() runs dbDelta with the current schema, which adds any
+		// missing columns (e.g. account_filter) on existing installs, and writes
+		// the new db version.
+		self::create_tables();
 	}
 
 	/**
