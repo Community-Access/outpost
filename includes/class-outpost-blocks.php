@@ -20,6 +20,10 @@ class OUTPOST_Blocks {
 		register_block_type( OUTPOST_PLUGIN_DIR . 'blocks/feed', [
 			'render_callback' => [ __CLASS__, 'render_feed_block' ],
 		] );
+
+		register_block_type( OUTPOST_PLUGIN_DIR . 'blocks/account-feed', [
+			'render_callback' => [ __CLASS__, 'render_account_feed_block' ],
+		] );
 	}
 
 	/**
@@ -53,6 +57,17 @@ class OUTPOST_Blocks {
 		}
 
 		return $output;
+	}
+
+	/**
+	 * Render callback for the outpost/account-feed block.
+	 *
+	 * @param array $attributes Block attributes (limit).
+	 * @return string
+	 */
+	public static function render_account_feed_block( $attributes ) {
+		$limit = isset( $attributes['limit'] ) ? absint( $attributes['limit'] ) : 20;
+		return do_shortcode( sprintf( '[outpost_account_feed limit="%d"]', $limit ) );
 	}
 
 	/**
