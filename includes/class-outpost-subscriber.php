@@ -6,6 +6,7 @@ class OUTPOST_Subscriber {
 
 	public static function init() {
 		add_action( 'init', [ __CLASS__, 'handle_token_actions' ] );
+		add_action( 'init', [ __CLASS__, 'handle_unsubscribe_post' ] );
 	}
 
 	// -------------------------------------------------------------------------
@@ -173,11 +174,43 @@ class OUTPOST_Subscriber {
 		if ( $action === 'confirm' ) {
 			$result = self::confirm( $token );
 			$status = is_wp_error( $result ) ? 'confirm_error' : 'confirmed';
-		} elseif ( $action === 'unsubscribe' ) {
-			$result = self::unsubscribe( $token );
-			$status = is_wp_error( $result ) ? 'unsub_error' : 'unsubscribed';
-		} else {
+			wp_safe_redirect( add_query_arg( 'outpost_status', $status, $manage_page ) );
+			exit;
+		}
+
+		if ( $action === 'unsubscribe' ) {
+			// Do not unsubscribe on this GET request: email clients and link
+			// scanners prefetch URLs, which would silently opt people out. Send
+			// the user to a confirmation form that completes the action via POST.
+			wp_safe_redirect( add_query_arg(
+				[
+					'outpost_status' => 'confirm_unsub',
+					'outpost_token'  => rawurlencode( $token ),
+				],
+				$manage_page
+			) );
+			exit;
+		}
+	}
+
+	/**
+	 * Complete an unsubscribe submitted from the confirmation form (POST).
+	 * Fires on 'init' so it can redirect before any output.
+	 */
+	public static function handle_unsubscribe_post() {
+		if ( ! isset( $_POST['outpost_action'] ) || $_POST['outpost_action'] !== 'confirm_unsubscribe' ) {
 			return;
+		}
+
+		check_admin_referer( 'outpost_unsubscribe', 'outpost_unsub_nonce' );
+
+		$token  = isset( $_POST['outpost_token'] ) ? sanitize_text_field( wp_unslash( $_POST['outpost_token'] ) ) : '';
+		$result = self::unsubscribe( $token );
+		$status = is_wp_error( $result ) ? 'unsub_error' : 'unsubscribed';
+
+		$manage_page = get_permalink( OUTPOST_Settings::get_manage_page_id() );
+		if ( ! $manage_page ) {
+			$manage_page = home_url();
 		}
 
 		wp_safe_redirect( add_query_arg( 'outpost_status', $status, $manage_page ) );
