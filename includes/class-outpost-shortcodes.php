@@ -10,8 +10,9 @@
 class OUTPOST_Shortcodes {
 
 	public static function init() {
-		add_shortcode( 'outpost_feed',      [ __CLASS__, 'render_feed' ] );
-		add_shortcode( 'outpost_subscribe', [ __CLASS__, 'render_subscribe_form' ] );
+		add_shortcode( 'outpost_feed',         [ __CLASS__, 'render_feed' ] );
+		add_shortcode( 'outpost_account_feed', [ __CLASS__, 'render_account_feed' ] );
+		add_shortcode( 'outpost_subscribe',    [ __CLASS__, 'render_subscribe_form' ] );
 
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
 		add_action( 'wp_ajax_nopriv_outpost_subscribe', [ __CLASS__, 'handle_subscribe_ajax' ] );
@@ -58,6 +59,46 @@ class OUTPOST_Shortcodes {
 		?>
 		<section class="outpost-feed" aria-labelledby="<?php echo esc_attr( $heading_id ); ?>">
 			<h2 class="outpost-feed__heading" id="<?php echo esc_attr( $heading_id ); ?>"><?php echo esc_html( '#' . $hashtag_row->hashtag ); ?></h2>
+
+			<?php if ( empty( $posts ) ) : ?>
+				<p class="outpost-feed__empty"><?php esc_html_e( 'No posts found yet. Check back soon.', 'outpost' ); ?></p>
+			<?php else : ?>
+				<?php echo self::render_posts_list( $posts ); ?>
+			<?php endif; ?>
+
+			<?php if ( $branding ) : ?>
+			<div class="outpost-feed__branding">
+				<?php echo $branding; ?>
+			</div>
+			<?php endif; ?>
+		</section>
+		<?php
+		return ob_get_clean();
+	}
+
+	// -------------------------------------------------------------------------
+	// Account feed shortcode
+	// -------------------------------------------------------------------------
+
+	/**
+	 * [outpost_account_feed limit="20"]
+	 */
+	public static function render_account_feed( $atts ) {
+		$atts = shortcode_atts( [ 'limit' => 20 ], $atts, 'outpost_account_feed' );
+
+		$handle = OUTPOST_Settings::get_brand_account();
+		if ( '' === $handle ) {
+			return '';
+		}
+
+		$posts      = OUTPOST_Feed_Fetcher::get_account_posts( (int) $atts['limit'] );
+		$branding   = OUTPOST_Settings::get_branding_html();
+		$heading_id = wp_unique_id( 'outpost-account-heading-' );
+
+		ob_start();
+		?>
+		<section class="outpost-feed" aria-labelledby="<?php echo esc_attr( $heading_id ); ?>">
+			<h2 class="outpost-feed__heading" id="<?php echo esc_attr( $heading_id ); ?>"><?php echo esc_html( '@' . $handle ); ?></h2>
 
 			<?php if ( empty( $posts ) ) : ?>
 				<p class="outpost-feed__empty"><?php esc_html_e( 'No posts found yet. Check back soon.', 'outpost' ); ?></p>
