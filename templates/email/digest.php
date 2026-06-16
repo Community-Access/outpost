@@ -48,7 +48,7 @@
 			<span><?php echo esc_html( $date ); ?></span>
 			&nbsp;&middot;&nbsp;
 			<?php endif; ?>
-			<a href="<?php echo esc_url( $url ); ?>" style="color: #0073aa;">
+			<a href="<?php echo esc_url( $url ); ?>" style="color: #005a87;">
 				<?php esc_html_e( 'View on Mastodon', 'outpost' ); ?>
 			</a>
 		</p>
