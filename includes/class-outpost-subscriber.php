@@ -159,8 +159,8 @@ class OUTPOST_Subscriber {
 	 * Fires on 'init' so it can redirect before any output.
 	 */
 	public static function handle_token_actions() {
-		$action = isset( $_GET['outpost_action'] ) ? sanitize_key( $_GET['outpost_action'] ) : '';
-		$token  = isset( $_GET['outpost_token'] )  ? sanitize_text_field( $_GET['outpost_token'] ) : '';
+		$action = isset( $_GET['outpost_action'] ) ? sanitize_key( wp_unslash( $_GET['outpost_action'] ) ) : '';
+		$token  = isset( $_GET['outpost_token'] )  ? sanitize_text_field( wp_unslash( $_GET['outpost_token'] ) ) : '';
 
 		if ( ! $action || ! $token ) {
 			return;
@@ -182,10 +182,12 @@ class OUTPOST_Subscriber {
 			// Do not unsubscribe on this GET request: email clients and link
 			// scanners prefetch URLs, which would silently opt people out. Send
 			// the user to a confirmation form that completes the action via POST.
+			// add_query_arg() already URL-encodes values, so pass the raw token to
+			// avoid double-encoding it.
 			wp_safe_redirect( add_query_arg(
 				[
 					'outpost_status' => 'confirm_unsub',
-					'outpost_token'  => rawurlencode( $token ),
+					'outpost_token'  => $token,
 				],
 				$manage_page
 			) );
