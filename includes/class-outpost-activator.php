@@ -108,6 +108,19 @@ class OUTPOST_Activator {
 	}
 
 	/**
+	 * Reschedule the daily digest cron to match the current send-time options.
+	 *
+	 * Safe to call on a settings save: it only touches the digest cron event and
+	 * does not re-create tables, re-seed defaults, or reset the setup-wizard flag.
+	 */
+	public static function reschedule_digest_cron() {
+		// Clear every scheduled instance of the hook, not just the next one, so
+		// any accidental WP-Cron duplicates cannot run the digest more than once.
+		wp_clear_scheduled_hook( 'outpost_daily_digest_event' );
+		self::schedule_cron();
+	}
+
+	/**
 	 * Schedule the daily digest cron event.
 	 */
 	private static function schedule_cron() {
