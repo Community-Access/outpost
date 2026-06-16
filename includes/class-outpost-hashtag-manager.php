@@ -192,6 +192,49 @@ class OUTPOST_Hashtag_Manager {
 	}
 
 	/**
+	 * Normalize a Mastodon account handle: trim, strip one leading @, lowercase.
+	 *
+	 * @param string $handle
+	 * @return string
+	 */
+	public static function normalize_handle( $handle ) {
+		return strtolower( ltrim( trim( (string) $handle ), '@' ) );
+	}
+
+	/**
+	 * Whether a post matches a stored account filter.
+	 *
+	 * @param string $filter      Stored filter (any casing; may be blank).
+	 * @param string $acct        Post's account->acct ("user" if local to the
+	 *                             hashtag instance, "user@host" if remote).
+	 * @param string $account_url Post's account->url (used to derive the host
+	 *                             when the acct is local).
+	 * @return bool
+	 */
+	public static function post_matches_filter( $filter, $acct, $account_url ) {
+		$filter = self::normalize_handle( $filter );
+		if ( '' === $filter ) {
+			return true;
+		}
+
+		$acct = strtolower( (string) $acct );
+		if ( $filter === $acct ) {
+			return true;
+		}
+
+		// Filter carries a host but the post is local to the hashtag instance
+		// (acct has no host): compare against username@<host of account url>.
+		if ( false !== strpos( $filter, '@' ) && false === strpos( $acct, '@' ) ) {
+			$host = strtolower( (string) wp_parse_url( $account_url, PHP_URL_HOST ) );
+			if ( $host && $filter === $acct . '@' . $host ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Return the Mastodon API endpoint for a hashtag.
 	 *
 	 * @param object $hashtag_row  Row from outpost_hashtags table.
