@@ -50,10 +50,14 @@ class OUTPOST_Shortcodes {
 		$posts = OUTPOST_Feed_Fetcher::get_posts( $hashtag_row->id, (int) $atts['limit'] );
 		$branding = OUTPOST_Settings::get_branding_html();
 
+		// Unique per render so multiple feeds for the same hashtag on one page do
+		// not produce duplicate IDs (WCAG 1.3.1 / 4.1.1).
+		$heading_id = wp_unique_id( 'outpost-feed-heading-' );
+
 		ob_start();
 		?>
-		<section class="outpost-feed" aria-labelledby="outpost-feed-heading-<?php echo esc_attr( $hashtag_row->id ); ?>">
-			<h2 class="outpost-feed__heading" id="outpost-feed-heading-<?php echo esc_attr( $hashtag_row->id ); ?>"><?php echo esc_html( '#' . $hashtag_row->hashtag ); ?></h2>
+		<section class="outpost-feed" aria-labelledby="<?php echo esc_attr( $heading_id ); ?>">
+			<h2 class="outpost-feed__heading" id="<?php echo esc_attr( $heading_id ); ?>"><?php echo esc_html( '#' . $hashtag_row->hashtag ); ?></h2>
 
 			<?php if ( empty( $posts ) ) : ?>
 				<p class="outpost-feed__empty"><?php esc_html_e( 'No posts found yet. Check back soon.', 'outpost' ); ?></p>
@@ -129,10 +133,12 @@ class OUTPOST_Shortcodes {
 			return '<p class="outpost-error">' . esc_html__( 'This subscription is not available.', 'outpost' ) . '</p>';
 		}
 
-		// Form ID is keyed to the hashtag DB row. Placing two outpost/feed blocks
-		// for the same hashtag on one page with showSubscribe=true produces duplicate
-		// IDs (WCAG 1.3.1). Tracked for fix in a follow-up (static instance counter).
-		$form_id = 'outpost-subscribe-' . $hashtag_row->id;
+		// Unique per render so two subscribe forms for the same hashtag on one page
+		// (e.g. two outpost/feed blocks with showSubscribe=true) do not produce
+		// duplicate IDs or cross-wired label associations (WCAG 1.3.1 / 4.1.1).
+		// Note: wp_unique_id() is per-request; a fragment cache that stamps one
+		// rendered form into several spots could reintroduce duplicates.
+		$form_id = wp_unique_id( 'outpost-subscribe-' );
 
 		ob_start();
 		?>
