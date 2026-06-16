@@ -191,6 +191,9 @@ class OUTPOST_Feed_Fetcher {
 		foreach ( $hashtags as $row ) {
 			self::get_posts( $row->id, 40, true );
 		}
+
+		// Keep the brand-account feed warm too.
+		self::get_account_posts( 40, true );
 	}
 
 	/**
