@@ -125,7 +125,7 @@ class OUTPOST_Admin {
 			$tag      = sanitize_text_field( $_POST['hashtag'] ?? '' );
 			$instance = sanitize_text_field( $_POST['instance_url'] ?? '' );
 			$label    = sanitize_text_field( $_POST['label'] ?? '' );
-			$result   = OUTPOST_Hashtag_Manager::add( $tag, $instance, $label );
+			$result   = OUTPOST_Hashtag_Manager::add( $tag, $instance, $label, sanitize_text_field( $_POST['account_filter'] ?? '' ) );
 			$redirect = add_query_arg(
 				[
 					'page' => 'outpost-hashtags',
@@ -145,6 +145,7 @@ class OUTPOST_Admin {
 				'hashtag'      => sanitize_text_field( $_POST['hashtag'] ?? '' ),
 				'instance_url' => sanitize_text_field( $_POST['instance_url'] ?? '' ),
 				'label'        => sanitize_text_field( $_POST['label'] ?? '' ),
+				'account_filter' => sanitize_text_field( $_POST['account_filter'] ?? '' ),
 				'active'       => ! empty( $_POST['active'] ),
 			] );
 			wp_safe_redirect( add_query_arg( [ 'page' => 'outpost-hashtags', 'outpost_notice' => 'updated' ], admin_url( 'admin.php' ) ) );
@@ -174,6 +175,7 @@ class OUTPOST_Admin {
 				'outpost_branding_text'      => $_POST['branding_text'] ?? '',
 				'outpost_branding_url'       => $_POST['branding_url'] ?? '',
 				'outpost_manage_page_id'     => $_POST['manage_page_id'] ?? 0,
+				'outpost_brand_account'      => $_POST['brand_account'] ?? '',
 			] );
 			// Reschedule only the digest cron to reflect the new send time. Do not
 			// round-trip through activate(), which would also re-run table creation,
