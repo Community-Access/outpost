@@ -1,4 +1,5 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
+<?php if ( ! defined( 'ABSPATH' ) ) {
+	exit;} ?>
 <div class="wrap outpost-admin">
 	<h1><?php esc_html_e( 'Manage Hashtags', 'outpost' ); ?></h1>
 
@@ -119,10 +120,16 @@
 						<?php esc_html_e( 'Edit', 'outpost' ); ?>
 					</a>
 					&nbsp;|&nbsp;
-					<a href="<?php echo esc_url( wp_nonce_url(
-						admin_url( 'admin.php?outpost_action=delete_hashtag&id=' . $row->id ),
-						'outpost_delete_hashtag_' . $row->id
-					) ); ?>"
+					<a href="
+					<?php
+					echo esc_url(
+						wp_nonce_url(
+							admin_url( 'admin.php?outpost_action=delete_hashtag&id=' . $row->id ),
+							'outpost_delete_hashtag_' . $row->id
+						)
+					);
+					?>
+					"
 					onclick="return confirm('<?php esc_attr_e( 'Delete this hashtag and all its subscribers? This cannot be undone.', 'outpost' ); ?>');"
 					class="outpost-delete-link">
 						<?php esc_html_e( 'Delete', 'outpost' ); ?>

@@ -1,4 +1,5 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit;
+<?php if ( ! defined( 'ABSPATH' ) ) {
+	exit;}
 // Variables available: $subscriber, $hashtag_row, $unsubscribe_url, $name
 ?><!DOCTYPE html>
 <html lang="<?php echo esc_attr( get_bloginfo( 'language' ) ); ?>">
@@ -27,10 +28,10 @@
 	<?php
 	$branding = OUTPOST_Settings::get_branding_html( false );
 	if ( $branding ) :
-	?>
+		?>
 	<hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
 	<div style="font-size: 14px; color: #666;">
-		<?php echo $branding; ?>
+		<?php echo $branding; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped by get_branding_html(). ?>
 	</div>
 	<?php endif; ?>
 

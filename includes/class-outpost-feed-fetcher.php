@@ -6,7 +6,7 @@ class OUTPOST_Feed_Fetcher {
 
 	public static function init() {
 		// Schedule cache refresh via WP-Cron if needed
-		add_action( 'outpost_refresh_feed_cache', [ __CLASS__, 'refresh_all_caches' ] );
+		add_action( 'outpost_refresh_feed_cache', array( __CLASS__, 'refresh_all_caches' ) );
 
 		if ( ! wp_next_scheduled( 'outpost_refresh_feed_cache' ) ) {
 			wp_schedule_event( time(), 'hourly', 'outpost_refresh_feed_cache' );
@@ -28,7 +28,7 @@ class OUTPOST_Feed_Fetcher {
 	public static function get_posts( $hashtag_id, $limit = 20, $force = false ) {
 		$hashtag_row = OUTPOST_Hashtag_Manager::get( $hashtag_id );
 		if ( ! $hashtag_row ) {
-			return [];
+			return array();
 		}
 
 		$cache_key = 'outpost_feed_' . $hashtag_id;
@@ -49,7 +49,7 @@ class OUTPOST_Feed_Fetcher {
 			} else {
 				// On error, fall back to stale cache if available.
 				$stale = get_transient( $cache_key );
-				$posts = $stale ? $stale : [];
+				$posts = $stale ? $stale : array();
 			}
 		}
 
@@ -71,11 +71,14 @@ class OUTPOST_Feed_Fetcher {
 			return $posts;
 		}
 
-		$matched = array_filter( $posts, function ( $post ) use ( $filter ) {
-			$acct = isset( $post->account->acct ) ? $post->account->acct : '';
-			$url  = isset( $post->account->url ) ? $post->account->url : '';
-			return OUTPOST_Hashtag_Manager::post_matches_filter( $filter, $acct, $url );
-		} );
+		$matched = array_filter(
+			$posts,
+			function ( $post ) use ( $filter ) {
+				$acct = isset( $post->account->acct ) ? $post->account->acct : '';
+				$url  = isset( $post->account->url ) ? $post->account->url : '';
+				return OUTPOST_Hashtag_Manager::post_matches_filter( $filter, $acct, $url );
+			}
+		);
 
 		return array_values( $matched );
 	}
@@ -90,12 +93,12 @@ class OUTPOST_Feed_Fetcher {
 	public static function get_account_posts( $limit = 20, $force = false ) {
 		$handle = OUTPOST_Settings::get_brand_account();
 		if ( '' === $handle || false === strpos( $handle, '@' ) ) {
-			return [];
+			return array();
 		}
 
 		list( $username, $host ) = explode( '@', $handle, 2 );
 		if ( '' === $username || '' === $host ) {
-			return [];
+			return array();
 		}
 
 		$cache_key = 'outpost_account_feed';
@@ -110,23 +113,23 @@ class OUTPOST_Feed_Fetcher {
 		$account_id = self::resolve_account_id( $host, $username );
 		if ( ! $account_id ) {
 			$stale = get_transient( $cache_key );
-			return $stale ? array_slice( $stale, 0, $limit ) : [];
+			return $stale ? array_slice( $stale, 0, $limit ) : array();
 		}
 
 		$url = 'https://' . $host . '/api/v1/accounts/' . rawurlencode( $account_id ) . '/statuses';
 		$url = add_query_arg(
-			[
+			array(
 				'limit'           => 40,
 				'exclude_replies' => 'true',
 				'exclude_reblogs' => 'true',
-			],
+			),
 			$url
 		);
 
 		$posts = self::request_json( $url );
 		if ( is_wp_error( $posts ) || ! is_array( $posts ) ) {
 			$stale = get_transient( $cache_key );
-			return $stale ? array_slice( $stale, 0, $limit ) : [];
+			return $stale ? array_slice( $stale, 0, $limit ) : array();
 		}
 
 		set_transient( $cache_key, $posts, OUTPOST_Settings::get_cache_duration() );
@@ -164,10 +167,13 @@ class OUTPOST_Feed_Fetcher {
 	 * @return mixed|WP_Error Decoded JSON, or WP_Error on failure.
 	 */
 	private static function request_json( $url ) {
-		$response = wp_remote_get( $url, [
-			'timeout'    => 15,
-			'user-agent' => 'MastodonHashtagDigest/' . OUTPOST_VERSION . ' WordPress/' . get_bloginfo( 'version' ),
-		] );
+		$response = wp_remote_get(
+			$url,
+			array(
+				'timeout'    => 15,
+				'user-agent' => 'MastodonHashtagDigest/' . OUTPOST_VERSION . ' WordPress/' . get_bloginfo( 'version' ),
+			)
+		);
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -205,7 +211,7 @@ class OUTPOST_Feed_Fetcher {
 	public static function get_posts_since_yesterday( $hashtag_id ) {
 		$all       = self::get_posts( $hashtag_id, 40, true );
 		$yesterday = time() - DAY_IN_SECONDS;
-		$filtered  = [];
+		$filtered  = array();
 
 		foreach ( $all as $post ) {
 			$created = strtotime( $post->created_at );
@@ -229,14 +235,17 @@ class OUTPOST_Feed_Fetcher {
 	 */
 	private static function fetch_from_api( $hashtag_row ) {
 		$url = add_query_arg(
-			[ 'limit' => 40 ],
+			array( 'limit' => 40 ),
 			OUTPOST_Hashtag_Manager::get_api_url( $hashtag_row )
 		);
 
-		$response = wp_remote_get( $url, [
-			'timeout'    => 15,
-			'user-agent' => 'MastodonHashtagDigest/' . OUTPOST_VERSION . ' WordPress/' . get_bloginfo( 'version' ),
-		] );
+		$response = wp_remote_get(
+			$url,
+			array(
+				'timeout'    => 15,
+				'user-agent' => 'MastodonHashtagDigest/' . OUTPOST_VERSION . ' WordPress/' . get_bloginfo( 'version' ),
+			)
+		);
 
 		if ( is_wp_error( $response ) ) {
 			error_log( '[Outpost] Feed fetch error for hashtag #' . $hashtag_row->hashtag . ': ' . $response->get_error_message() );

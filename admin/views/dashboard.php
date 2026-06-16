@@ -1,18 +1,21 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
+<?php if ( ! defined( 'ABSPATH' ) ) {
+	exit;} ?>
 <div class="wrap outpost-admin">
 	<h1><?php esc_html_e( 'Hashtag Digest: Dashboard', 'outpost' ); ?></h1>
 
 	<?php if ( empty( $hashtags ) ) : ?>
 	<div class="notice notice-warning">
 		<p>
-			<?php printf(
+			<?php
+			printf(
 				wp_kses(
-					__( 'No hashtags configured yet. <a href="%s">Add your first hashtag</a> or <a href="%s">run the setup wizard</a>.', 'outpost' ),
-					[ 'a' => [ 'href' => [] ] ]
+					__( 'No hashtags configured yet. <a href="%1$s">Add your first hashtag</a> or <a href="%2$s">run the setup wizard</a>.', 'outpost' ),
+					array( 'a' => array( 'href' => array() ) )
 				),
 				esc_url( admin_url( 'admin.php?page=outpost-hashtags' ) ),
 				esc_url( admin_url( 'admin.php?page=outpost-setup' ) )
-			); ?>
+			);
+			?>
 		</p>
 	</div>
 	<?php else : ?>
@@ -30,9 +33,10 @@
 			</tr>
 		</thead>
 		<tbody>
-			<?php foreach ( $hashtags as $row ) :
+			<?php
+			foreach ( $hashtags as $row ) :
 				$count = OUTPOST_Subscriber::count( $row->id );
-			?>
+				?>
 			<tr>
 				<td><strong>#<?php echo esc_html( $row->hashtag ); ?></strong></td>
 				<td><?php echo esc_html( $row->instance_url ); ?></td>
@@ -75,7 +79,7 @@
 	</table>
 
 	<h2><?php esc_html_e( 'Next scheduled digest', 'outpost' ); ?></h2>
-	<?php
+		<?php
 		$next = wp_next_scheduled( 'outpost_daily_digest_event' );
 		if ( $next ) {
 			echo '<p>' . sprintf(
@@ -85,6 +89,6 @@
 		} else {
 			echo '<p class="outpost-warning">' . esc_html__( 'Digest cron is not scheduled. Deactivate and reactivate the plugin to fix this.', 'outpost' ) . '</p>';
 		}
-	?>
+		?>
 	<?php endif; ?>
 </div>

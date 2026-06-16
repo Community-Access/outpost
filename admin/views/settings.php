@@ -1,4 +1,5 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
+<?php if ( ! defined( 'ABSPATH' ) ) {
+	exit;} ?>
 <div class="wrap outpost-admin">
 	<h1><?php esc_html_e( 'Hashtag Digest Settings', 'outpost' ); ?></h1>
 
@@ -69,19 +70,21 @@
 				<td>
 					<select id="s-manage-page" name="manage_page_id" class="regular-text">
 						<option value="0"><?php esc_html_e( '-- Select a page --', 'outpost' ); ?></option>
-						<?php foreach ( $pages as $page ) : ?>
-						<option value="<?php echo esc_attr( $page->ID ); ?>" <?php selected( OUTPOST_Settings::get_manage_page_id(), $page->ID ); ?>>
-							<?php echo esc_html( $page->post_title ); ?>
+						<?php foreach ( $pages as $page_item ) : ?>
+						<option value="<?php echo esc_attr( $page_item->ID ); ?>" <?php selected( OUTPOST_Settings::get_manage_page_id(), $page_item->ID ); ?>>
+							<?php echo esc_html( $page_item->post_title ); ?>
 						</option>
 						<?php endforeach; ?>
 					</select>
 					<p class="description">
-						<?php printf(
+						<?php
+						printf(
 							wp_kses(
 								__( 'Create a page with the shortcode <code>[outpost_manage_subscriptions]</code> and select it here. Confirmation and unsubscribe links will redirect here.', 'outpost' ),
-								[ 'code' => [] ]
+								array( 'code' => array() )
 							)
-						); ?>
+						);
+						?>
 					</p>
 				</td>
 			</tr>

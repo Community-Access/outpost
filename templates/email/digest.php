@@ -1,4 +1,5 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit;
+<?php if ( ! defined( 'ABSPATH' ) ) {
+	exit;}
 // Variables available: $subscriber, $hashtag_row, $posts, $unsubscribe_url, $name, $branding_html
 ?><!DOCTYPE html>
 <html lang="<?php echo esc_attr( get_bloginfo( 'language' ) ); ?>">
@@ -25,12 +26,13 @@
 
 	<p><?php echo esc_html( sprintf( __( "Here are today's posts tagged #%s.", 'outpost' ), $hashtag_row->hashtag ) ); ?></p>
 
-	<?php foreach ( $posts as $post ) :
-		$text    = OUTPOST_Feed_Fetcher::post_to_plain_text( $post->content );
-		$date    = OUTPOST_Feed_Fetcher::format_date( $post->created_at );
-		$url     = $post->url;
-		$account = isset( $post->account->acct ) ? '@' . $post->account->acct : '';
-	?>
+	<?php
+	foreach ( $posts as $outpost_post ) :
+		$text    = OUTPOST_Feed_Fetcher::post_to_plain_text( $outpost_post->content );
+		$date    = OUTPOST_Feed_Fetcher::format_date( $outpost_post->created_at );
+		$url     = $outpost_post->url;
+		$account = isset( $outpost_post->account->acct ) ? '@' . $outpost_post->account->acct : '';
+		?>
 	<article style="border: 1px solid #eee; border-radius: 4px; padding: 16px; margin-bottom: 16px;">
 
 		<?php if ( $account ) : ?>
@@ -59,7 +61,7 @@
 
 	<footer style="font-size: 13px; color: #595959;">
 		<?php if ( $branding_html ) : ?>
-		<p><?php echo $branding_html; ?></p>
+		<p><?php echo $branding_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped by get_branding_html(). ?></p>
 		<?php endif; ?>
 		<p>
 			<?php esc_html_e( 'You are receiving this because you subscribed to this digest.', 'outpost' ); ?>

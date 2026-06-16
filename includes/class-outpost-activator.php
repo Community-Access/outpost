@@ -111,20 +111,20 @@ class OUTPOST_Activator {
 	 * Set sensible default plugin options if they don't exist.
 	 */
 	private static function set_defaults() {
-		$defaults = [
-			'outpost_digest_send_hour'      => 8,   // 8 AM local time
-			'outpost_digest_send_minute'    => 0,
-			'outpost_from_name'             => get_bloginfo( 'name' ),
-			'outpost_from_email'            => get_option( 'admin_email' ),
-			'outpost_branding_text'         => '',
-			'outpost_branding_url'          => '',
-			'outpost_posts_per_digest'      => 10,
-			'outpost_digest_batch_size'     => 50,  // subscribers per batch
-			'outpost_cache_duration'        => 3600, // 1 hour
-			'outpost_double_optin'          => true,
-			'outpost_manage_page_id'        => 0,
-			'outpost_brand_account'         => '',
-		];
+		$defaults = array(
+			'outpost_digest_send_hour'   => 8,   // 8 AM local time
+			'outpost_digest_send_minute' => 0,
+			'outpost_from_name'          => get_bloginfo( 'name' ),
+			'outpost_from_email'         => get_option( 'admin_email' ),
+			'outpost_branding_text'      => '',
+			'outpost_branding_url'       => '',
+			'outpost_posts_per_digest'   => 10,
+			'outpost_digest_batch_size'  => 50,  // subscribers per batch
+			'outpost_cache_duration'     => 3600, // 1 hour
+			'outpost_double_optin'       => true,
+			'outpost_manage_page_id'     => 0,
+			'outpost_brand_account'      => '',
+		);
 
 		foreach ( $defaults as $key => $value ) {
 			if ( false === get_option( $key ) ) {
@@ -154,8 +154,10 @@ class OUTPOST_Activator {
 			$hour   = (int) get_option( 'outpost_digest_send_hour', 8 );
 			$minute = (int) get_option( 'outpost_digest_send_minute', 0 );
 
-			// Schedule for next occurrence of the configured hour
+			// Schedule for next occurrence of the configured hour. The send time is
+			// intentionally the site's local hour, so we work in local time here.
 			$now        = current_time( 'timestamp' );
+			// phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date -- intentional local-time scheduling, derived from current_time().
 			$today_send = mktime( $hour, $minute, 0, date( 'n', $now ), date( 'j', $now ), date( 'Y', $now ) );
 			$start      = ( $today_send > $now ) ? $today_send : $today_send + DAY_IN_SECONDS;
 

@@ -12,11 +12,11 @@
 class OUTPOST_Admin {
 
 	public static function init() {
-		add_action( 'admin_menu',         [ __CLASS__, 'register_menus' ] );
-		add_action( 'admin_init',         [ __CLASS__, 'maybe_redirect_to_wizard' ] );
-		add_action( 'admin_init',         [ __CLASS__, 'handle_form_submissions' ] );
-		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
-		add_action( 'admin_notices',      [ __CLASS__, 'show_setup_wizard_notice' ] );
+		add_action( 'admin_menu', array( __CLASS__, 'register_menus' ) );
+		add_action( 'admin_init', array( __CLASS__, 'maybe_redirect_to_wizard' ) );
+		add_action( 'admin_init', array( __CLASS__, 'handle_form_submissions' ) );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
+		add_action( 'admin_notices', array( __CLASS__, 'show_setup_wizard_notice' ) );
 	}
 
 	/**
@@ -59,7 +59,7 @@ class OUTPOST_Admin {
 			__( 'Hashtag Digest', 'outpost' ),
 			'manage_options',
 			'outpost-dashboard',
-			[ __CLASS__, 'page_dashboard' ],
+			array( __CLASS__, 'page_dashboard' ),
 			'dashicons-rss',
 			58
 		);
@@ -70,7 +70,7 @@ class OUTPOST_Admin {
 			__( 'Dashboard', 'outpost' ),
 			'manage_options',
 			'outpost-dashboard',
-			[ __CLASS__, 'page_dashboard' ]
+			array( __CLASS__, 'page_dashboard' )
 		);
 
 		add_submenu_page(
@@ -79,7 +79,7 @@ class OUTPOST_Admin {
 			__( 'Hashtags', 'outpost' ),
 			'manage_options',
 			'outpost-hashtags',
-			[ __CLASS__, 'page_hashtags' ]
+			array( __CLASS__, 'page_hashtags' )
 		);
 
 		add_submenu_page(
@@ -88,7 +88,7 @@ class OUTPOST_Admin {
 			__( 'Subscribers', 'outpost' ),
 			'manage_options',
 			'outpost-subscribers',
-			[ __CLASS__, 'page_subscribers' ]
+			array( __CLASS__, 'page_subscribers' )
 		);
 
 		add_submenu_page(
@@ -97,7 +97,7 @@ class OUTPOST_Admin {
 			__( 'Settings', 'outpost' ),
 			'manage_options',
 			'outpost-settings',
-			[ __CLASS__, 'page_settings' ]
+			array( __CLASS__, 'page_settings' )
 		);
 
 		add_submenu_page(
@@ -106,7 +106,7 @@ class OUTPOST_Admin {
 			__( 'Setup Wizard', 'outpost' ),
 			'manage_options',
 			'outpost-setup',
-			[ __CLASS__, 'page_setup_wizard' ]
+			array( __CLASS__, 'page_setup_wizard' )
 		);
 	}
 
@@ -127,10 +127,10 @@ class OUTPOST_Admin {
 			$label    = sanitize_text_field( $_POST['label'] ?? '' );
 			$result   = OUTPOST_Hashtag_Manager::add( $tag, $instance, $label, sanitize_text_field( $_POST['account_filter'] ?? '' ) );
 			$redirect = add_query_arg(
-				[
-					'page' => 'outpost-hashtags',
+				array(
+					'page'           => 'outpost-hashtags',
 					'outpost_notice' => is_wp_error( $result ) ? 'add_error' : 'added',
-				],
+				),
 				admin_url( 'admin.php' )
 			);
 			wp_safe_redirect( $redirect );
@@ -141,14 +141,25 @@ class OUTPOST_Admin {
 		if ( isset( $_POST['outpost_action'] ) && $_POST['outpost_action'] === 'update_hashtag' ) {
 			check_admin_referer( 'outpost_update_hashtag' );
 			$id     = (int) ( $_POST['hashtag_id'] ?? 0 );
-			$result = OUTPOST_Hashtag_Manager::update( $id, [
-				'hashtag'      => sanitize_text_field( $_POST['hashtag'] ?? '' ),
-				'instance_url' => sanitize_text_field( $_POST['instance_url'] ?? '' ),
-				'label'        => sanitize_text_field( $_POST['label'] ?? '' ),
-				'account_filter' => sanitize_text_field( $_POST['account_filter'] ?? '' ),
-				'active'       => ! empty( $_POST['active'] ),
-			] );
-			wp_safe_redirect( add_query_arg( [ 'page' => 'outpost-hashtags', 'outpost_notice' => 'updated' ], admin_url( 'admin.php' ) ) );
+			$result = OUTPOST_Hashtag_Manager::update(
+				$id,
+				array(
+					'hashtag'        => sanitize_text_field( $_POST['hashtag'] ?? '' ),
+					'instance_url'   => sanitize_text_field( $_POST['instance_url'] ?? '' ),
+					'label'          => sanitize_text_field( $_POST['label'] ?? '' ),
+					'account_filter' => sanitize_text_field( $_POST['account_filter'] ?? '' ),
+					'active'         => ! empty( $_POST['active'] ),
+				)
+			);
+			wp_safe_redirect(
+				add_query_arg(
+					array(
+						'page'           => 'outpost-hashtags',
+						'outpost_notice' => 'updated',
+					),
+					admin_url( 'admin.php' )
+				)
+			);
 			exit;
 		}
 
@@ -156,32 +167,50 @@ class OUTPOST_Admin {
 		if ( isset( $_GET['outpost_action'] ) && $_GET['outpost_action'] === 'delete_hashtag' ) {
 			check_admin_referer( 'outpost_delete_hashtag_' . absint( $_GET['id'] ) );
 			OUTPOST_Hashtag_Manager::delete( absint( $_GET['id'] ) );
-			wp_safe_redirect( add_query_arg( [ 'page' => 'outpost-hashtags', 'outpost_notice' => 'deleted' ], admin_url( 'admin.php' ) ) );
+			wp_safe_redirect(
+				add_query_arg(
+					array(
+						'page'           => 'outpost-hashtags',
+						'outpost_notice' => 'deleted',
+					),
+					admin_url( 'admin.php' )
+				)
+			);
 			exit;
 		}
 
 		// Save settings
 		if ( isset( $_POST['outpost_action'] ) && $_POST['outpost_action'] === 'save_settings' ) {
 			check_admin_referer( 'outpost_save_settings' );
-			OUTPOST_Settings::save( [
-				'outpost_from_name'          => $_POST['from_name'] ?? '',
-				'outpost_from_email'         => $_POST['from_email'] ?? '',
-				'outpost_digest_send_hour'   => $_POST['send_hour'] ?? 8,
-				'outpost_digest_send_minute' => $_POST['send_minute'] ?? 0,
-				'outpost_posts_per_digest'   => $_POST['posts_per_digest'] ?? 10,
-				'outpost_digest_batch_size'  => $_POST['digest_batch_size'] ?? 50,
-				'outpost_cache_duration'     => ( (int) ( $_POST['cache_duration'] ?? 60 ) ) * 60,
-				'outpost_double_optin'       => ! empty( $_POST['double_optin'] ),
-				'outpost_branding_text'      => $_POST['branding_text'] ?? '',
-				'outpost_branding_url'       => $_POST['branding_url'] ?? '',
-				'outpost_manage_page_id'     => $_POST['manage_page_id'] ?? 0,
-				'outpost_brand_account'      => $_POST['brand_account'] ?? '',
-			] );
+			OUTPOST_Settings::save(
+				array(
+					'outpost_from_name'          => $_POST['from_name'] ?? '',
+					'outpost_from_email'         => $_POST['from_email'] ?? '',
+					'outpost_digest_send_hour'   => $_POST['send_hour'] ?? 8,
+					'outpost_digest_send_minute' => $_POST['send_minute'] ?? 0,
+					'outpost_posts_per_digest'   => $_POST['posts_per_digest'] ?? 10,
+					'outpost_digest_batch_size'  => $_POST['digest_batch_size'] ?? 50,
+					'outpost_cache_duration'     => ( (int) ( $_POST['cache_duration'] ?? 60 ) ) * 60,
+					'outpost_double_optin'       => ! empty( $_POST['double_optin'] ),
+					'outpost_branding_text'      => $_POST['branding_text'] ?? '',
+					'outpost_branding_url'       => $_POST['branding_url'] ?? '',
+					'outpost_manage_page_id'     => $_POST['manage_page_id'] ?? 0,
+					'outpost_brand_account'      => $_POST['brand_account'] ?? '',
+				)
+			);
 			// Reschedule only the digest cron to reflect the new send time. Do not
 			// round-trip through activate(), which would also re-run table creation,
 			// re-seed defaults, and re-flag the setup wizard.
 			OUTPOST_Activator::reschedule_digest_cron();
-			wp_safe_redirect( add_query_arg( [ 'page' => 'outpost-settings', 'outpost_notice' => 'saved' ], admin_url( 'admin.php' ) ) );
+			wp_safe_redirect(
+				add_query_arg(
+					array(
+						'page'           => 'outpost-settings',
+						'outpost_notice' => 'saved',
+					),
+					admin_url( 'admin.php' )
+				)
+			);
 			exit;
 		}
 
@@ -191,7 +220,15 @@ class OUTPOST_Admin {
 			$hashtag_id = (int) ( $_POST['hashtag_id'] ?? 0 );
 			$result     = OUTPOST_Email_Digest::send_digest_now( $hashtag_id );
 			$notice     = is_wp_error( $result ) ? 'test_error' : 'test_sent';
-			wp_safe_redirect( add_query_arg( [ 'page' => 'outpost-dashboard', 'outpost_notice' => $notice ], admin_url( 'admin.php' ) ) );
+			wp_safe_redirect(
+				add_query_arg(
+					array(
+						'page'           => 'outpost-dashboard',
+						'outpost_notice' => $notice,
+					),
+					admin_url( 'admin.php' )
+				)
+			);
 			exit;
 		}
 
@@ -200,16 +237,18 @@ class OUTPOST_Admin {
 			check_admin_referer( 'outpost_setup_wizard' );
 
 			// Save settings
-			OUTPOST_Settings::save( [
-				'outpost_from_name'      => $_POST['from_name'] ?? get_bloginfo( 'name' ),
-				'outpost_from_email'     => $_POST['from_email'] ?? get_option( 'admin_email' ),
-				'outpost_branding_text'  => $_POST['branding_text'] ?? '',
-				'outpost_branding_url'   => $_POST['branding_url'] ?? '',
-			] );
+			OUTPOST_Settings::save(
+				array(
+					'outpost_from_name'     => $_POST['from_name'] ?? get_bloginfo( 'name' ),
+					'outpost_from_email'    => $_POST['from_email'] ?? get_option( 'admin_email' ),
+					'outpost_branding_text' => $_POST['branding_text'] ?? '',
+					'outpost_branding_url'  => $_POST['branding_url'] ?? '',
+				)
+			);
 
 			// Add hashtags
-			$tags      = array_filter( array_map( 'trim', explode( ',', sanitize_text_field( $_POST['hashtags'] ?? '' ) ) ) );
-			$instance  = sanitize_text_field( $_POST['instance_url'] ?? 'https://mastodon.social' );
+			$tags     = array_filter( array_map( 'trim', explode( ',', sanitize_text_field( $_POST['hashtags'] ?? '' ) ) ) );
+			$instance = sanitize_text_field( $_POST['instance_url'] ?? 'https://mastodon.social' );
 
 			foreach ( $tags as $tag ) {
 				OUTPOST_Hashtag_Manager::add( $tag, $instance );
@@ -217,7 +256,15 @@ class OUTPOST_Admin {
 
 			delete_option( 'outpost_show_setup_wizard' );
 
-			wp_safe_redirect( add_query_arg( [ 'page' => 'outpost-dashboard', 'outpost_notice' => 'setup_complete' ], admin_url( 'admin.php' ) ) );
+			wp_safe_redirect(
+				add_query_arg(
+					array(
+						'page'           => 'outpost-dashboard',
+						'outpost_notice' => 'setup_complete',
+					),
+					admin_url( 'admin.php' )
+				)
+			);
 			exit;
 		}
 	}
@@ -235,7 +282,7 @@ class OUTPOST_Admin {
 		printf(
 			wp_kses(
 				__( 'OutPost is installed. <a href="%s">Run the setup wizard</a> to add your first hashtag.', 'outpost' ),
-				[ 'a' => [ 'href' => [] ] ]
+				array( 'a' => array( 'href' => array() ) )
 			),
 			esc_url( $url )
 		);
@@ -252,16 +299,16 @@ class OUTPOST_Admin {
 			return;
 		}
 
-		$messages = [
-			'added'          => [ 'success', __( 'Hashtag added.', 'outpost' ) ],
-			'add_error'      => [ 'error',   __( 'Could not add hashtag. It may already exist.', 'outpost' ) ],
-			'updated'        => [ 'success', __( 'Hashtag updated.', 'outpost' ) ],
-			'deleted'        => [ 'success', __( 'Hashtag deleted.', 'outpost' ) ],
-			'saved'          => [ 'success', __( 'Settings saved.', 'outpost' ) ],
-			'test_sent'      => [ 'success', __( 'Test digest sent to confirmed subscribers.', 'outpost' ) ],
-			'test_error'     => [ 'error',   __( 'Test digest failed. Check there are posts and confirmed subscribers.', 'outpost' ) ],
-			'setup_complete' => [ 'success', __( 'Setup complete. Your hashtags are now active.', 'outpost' ) ],
-		];
+		$messages = array(
+			'added'          => array( 'success', __( 'Hashtag added.', 'outpost' ) ),
+			'add_error'      => array( 'error', __( 'Could not add hashtag. It may already exist.', 'outpost' ) ),
+			'updated'        => array( 'success', __( 'Hashtag updated.', 'outpost' ) ),
+			'deleted'        => array( 'success', __( 'Hashtag deleted.', 'outpost' ) ),
+			'saved'          => array( 'success', __( 'Settings saved.', 'outpost' ) ),
+			'test_sent'      => array( 'success', __( 'Test digest sent to confirmed subscribers.', 'outpost' ) ),
+			'test_error'     => array( 'error', __( 'Test digest failed. Check there are posts and confirmed subscribers.', 'outpost' ) ),
+			'setup_complete' => array( 'success', __( 'Setup complete. Your hashtags are now active.', 'outpost' ) ),
+		);
 
 		if ( isset( $messages[ $notice ] ) ) {
 			[$type, $msg] = $messages[ $notice ];
@@ -281,16 +328,16 @@ class OUTPOST_Admin {
 
 	public static function page_hashtags() {
 		self::show_notice();
-		$edit_id     = isset( $_GET['edit'] ) ? (int) $_GET['edit'] : 0;
-		$edit_row    = $edit_id ? OUTPOST_Hashtag_Manager::get( $edit_id ) : null;
-		$hashtags    = OUTPOST_Hashtag_Manager::get_all();
+		$edit_id  = isset( $_GET['edit'] ) ? (int) $_GET['edit'] : 0;
+		$edit_row = $edit_id ? OUTPOST_Hashtag_Manager::get( $edit_id ) : null;
+		$hashtags = OUTPOST_Hashtag_Manager::get_all();
 		include OUTPOST_PLUGIN_DIR . 'admin/views/hashtags.php';
 	}
 
 	public static function page_subscribers() {
 		self::show_notice();
-		$hashtag_id  = isset( $_GET['hashtag_id'] ) ? (int) $_GET['hashtag_id'] : 0;
-		$hashtags    = OUTPOST_Hashtag_Manager::get_all();
+		$hashtag_id = isset( $_GET['hashtag_id'] ) ? (int) $_GET['hashtag_id'] : 0;
+		$hashtags   = OUTPOST_Hashtag_Manager::get_all();
 		include OUTPOST_PLUGIN_DIR . 'admin/views/subscribers.php';
 	}
 
@@ -315,7 +362,7 @@ class OUTPOST_Admin {
 		wp_enqueue_style(
 			'outpost-admin',
 			OUTPOST_PLUGIN_URL . 'admin/outpost-admin.css',
-			[],
+			array(),
 			OUTPOST_VERSION
 		);
 	}

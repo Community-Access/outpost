@@ -1,4 +1,5 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit; ?>
+<?php if ( ! defined( 'ABSPATH' ) ) {
+	exit;} ?>
 <div class="wrap outpost-admin">
 	<h1><?php esc_html_e( 'Subscribers', 'outpost' ); ?></h1>
 
@@ -20,12 +21,14 @@
 	global $wpdb;
 
 	if ( $hashtag_id ) {
-		$rows = $wpdb->get_results( $wpdb->prepare(
-			"SELECT s.*, h.hashtag FROM {$wpdb->prefix}outpost_subscribers s
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT s.*, h.hashtag FROM {$wpdb->prefix}outpost_subscribers s
 			 JOIN {$wpdb->prefix}outpost_hashtags h ON h.id = s.hashtag_id
 			 WHERE s.hashtag_id = %d ORDER BY s.created_at DESC",
-			$hashtag_id
-		) );
+				$hashtag_id
+			)
+		);
 	} else {
 		$rows = $wpdb->get_results(
 			"SELECT s.*, h.hashtag FROM {$wpdb->prefix}outpost_subscribers s

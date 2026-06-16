@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<ruleset name="OutPost">
+	<description>Coding standards for the OutPost plugin.</description>
+
+	<file>.</file>
+
+	<exclude-pattern>/vendor/*</exclude-pattern>
+	<exclude-pattern>/tests/*</exclude-pattern>
+	<exclude-pattern>/blocks/*/editor.js</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg name="basepath" value="."/>
+	<arg name="colors"/>
+	<arg value="ps"/>
+	<arg name="parallel" value="8"/>
+
+	<!-- Fail CI on errors; warnings are reported but non-blocking. -->
+	<config name="ignore_warnings_on_exit" value="1"/>
+
+	<!-- WordPress-Extra: correctness, security, and naming. We keep the security
+	     and correctness sniffs and relax the heavy documentation/formatting sniffs
+	     that would require rewriting every docblock in an existing codebase. -->
+	<rule ref="WordPress-Extra">
+		<exclude name="Squiz.Commenting"/>
+		<exclude name="Generic.Commenting"/>
+		<exclude name="WordPress.PHP.YodaConditions"/>
+		<exclude name="Universal.Operators.DisallowShortTernary"/>
+		<exclude name="WordPress.WP.I18n.MissingTranslatorsComment"/>
+		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter"/>
+		<exclude name="WordPress.Files.FileName"/>
+	</rule>
+
+	<!-- PHP version floor (matches Requires PHP). -->
+	<config name="testVersion" value="8.3-"/>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<!-- Plugin text domain. -->
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="outpost"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Global prefixes used by the plugin. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="outpost"/>
+				<element value="OUTPOST"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Template and view files run in the scope of their including method, so
+	     their local variables are not truly global; don't flag them. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound">
+		<exclude-pattern>/templates/*</exclude-pattern>
+		<exclude-pattern>/admin/views/*</exclude-pattern>
+	</rule>
+</ruleset>

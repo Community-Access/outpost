@@ -1,4 +1,5 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit;
+<?php if ( ! defined( 'ABSPATH' ) ) {
+	exit;}
 // Variables available: $rows (subscriber rows), $branding_html.
 ?><!DOCTYPE html>
 <html lang="<?php echo esc_attr( get_bloginfo( 'language' ) ); ?>">
@@ -15,12 +16,13 @@
 	<p><?php esc_html_e( 'You asked to manage the digests you receive at this address. Here are your current subscriptions.', 'outpost' ); ?></p>
 
 	<ul style="padding-left: 20px;">
-		<?php foreach ( $rows as $row ) :
+		<?php
+		foreach ( $rows as $row ) :
 			$status_label = $row->status === 'pending'
 				? __( 'Pending confirmation', 'outpost' )
 				: __( 'Active', 'outpost' );
-			$unsub_url = OUTPOST_Subscriber::unsubscribe_url( $row );
-		?>
+			$unsub_url    = OUTPOST_Subscriber::unsubscribe_url( $row );
+			?>
 		<li style="margin-bottom: 8px;">
 			<strong>#<?php echo esc_html( $row->hashtag ); ?></strong>
 			&mdash; <?php echo esc_html( $status_label ); ?>
@@ -39,7 +41,7 @@
 	<?php if ( $branding_html ) : ?>
 	<hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
 	<div style="font-size: 14px; color: #595959;">
-		<?php echo $branding_html; ?>
+		<?php echo $branding_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped by get_branding_html(). ?>
 	</div>
 	<?php endif; ?>
 

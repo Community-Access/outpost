@@ -9,12 +9,12 @@
 class OUTPOST_Public_Page {
 
 	public static function init() {
-		add_shortcode( 'outpost_manage_subscriptions', [ __CLASS__, 'render_manage_page' ] );
+		add_shortcode( 'outpost_manage_subscriptions', array( __CLASS__, 'render_manage_page' ) );
 
 		// Registered here (not inside the shortcode render) so the handler is
 		// available during admin-ajax.php requests, where the shortcode never runs.
-		add_action( 'wp_ajax_nopriv_outpost_lookup', [ __CLASS__, 'handle_lookup_ajax' ] );
-		add_action( 'wp_ajax_outpost_lookup',        [ __CLASS__, 'handle_lookup_ajax' ] );
+		add_action( 'wp_ajax_nopriv_outpost_lookup', array( __CLASS__, 'handle_lookup_ajax' ) );
+		add_action( 'wp_ajax_outpost_lookup', array( __CLASS__, 'handle_lookup_ajax' ) );
 	}
 
 	/**
@@ -28,24 +28,24 @@ class OUTPOST_Public_Page {
 	public static function render_manage_page( $atts ) {
 		$status = isset( $_GET['outpost_status'] ) ? sanitize_key( $_GET['outpost_status'] ) : '';
 
-		$messages = [
-			'confirmed'    => [
+		$messages = array(
+			'confirmed'     => array(
 				'type' => 'success',
 				'text' => __( 'You are confirmed. Your first digest will arrive tomorrow morning.', 'outpost' ),
-			],
-			'unsubscribed' => [
+			),
+			'unsubscribed'  => array(
 				'type' => 'success',
 				'text' => __( 'You have been unsubscribed. You will not receive any more emails for that hashtag.', 'outpost' ),
-			],
-			'confirm_error' => [
+			),
+			'confirm_error' => array(
 				'type' => 'error',
 				'text' => __( 'That confirmation link is not valid or has already been used.', 'outpost' ),
-			],
-			'unsub_error'  => [
+			),
+			'unsub_error'   => array(
 				'type' => 'error',
 				'text' => __( 'That unsubscribe link is not valid.', 'outpost' ),
-			],
-		];
+			),
+		);
 
 		$active_hashtags = OUTPOST_Hashtag_Manager::get_all( true );
 		$branding        = OUTPOST_Settings::get_branding_html();
@@ -133,7 +133,7 @@ class OUTPOST_Public_Page {
 
 			<?php if ( $branding ) : ?>
 			<div class="outpost-manage-page__branding">
-				<?php echo $branding; ?>
+				<?php echo $branding; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped by get_branding_html(). ?>
 			</div>
 			<?php endif; ?>
 
@@ -157,17 +157,19 @@ class OUTPOST_Public_Page {
 		$email = sanitize_email( wp_unslash( $_POST['email'] ?? '' ) );
 
 		if ( ! is_email( $email ) ) {
-			wp_send_json_error( [ 'message' => __( 'Please enter a valid email address.', 'outpost' ) ] );
+			wp_send_json_error( array( 'message' => __( 'Please enter a valid email address.', 'outpost' ) ) );
 		}
 
 		global $wpdb;
-		$rows = $wpdb->get_results( $wpdb->prepare(
-			"SELECT s.*, h.hashtag, h.label
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT s.*, h.hashtag, h.label
 			 FROM {$wpdb->prefix}outpost_subscribers s
 			 JOIN {$wpdb->prefix}outpost_hashtags h ON h.id = s.hashtag_id
 			 WHERE s.email = %s AND s.status != 'unsubscribed'",
-			$email
-		) );
+				$email
+			)
+		);
 
 		// Throttle the email send per IP so the endpoint cannot be used to fire
 		// repeated mail at a subscribed address. The response below is identical
@@ -179,9 +181,11 @@ class OUTPOST_Public_Page {
 		// Always return the same message, regardless of whether the address was
 		// found, so the endpoint never confirms or denies a subscription and never
 		// exposes a token to the requester.
-		wp_send_json_success( [
-			'message' => __( 'If that email address has any subscriptions, we have just emailed you your management links. Please check your inbox.', 'outpost' ),
-		] );
+		wp_send_json_success(
+			array(
+				'message' => __( 'If that email address has any subscriptions, we have just emailed you your management links. Please check your inbox.', 'outpost' ),
+			)
+		);
 	}
 
 	/**
