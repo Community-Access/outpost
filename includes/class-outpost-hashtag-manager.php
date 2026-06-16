@@ -69,7 +69,7 @@ class OUTPOST_Hashtag_Manager {
 	 * @param string $label         Human-readable label.
 	 * @return int|WP_Error  New row ID on success, WP_Error on failure.
 	 */
-	public static function add( $hashtag, $instance_url, $label = '' ) {
+	public static function add( $hashtag, $instance_url, $label = '', $account_filter = '' ) {
 		global $wpdb;
 
 		$hashtag      = self::normalize_tag( $hashtag );
@@ -91,12 +91,13 @@ class OUTPOST_Hashtag_Manager {
 		$result = $wpdb->insert(
 			$wpdb->prefix . 'outpost_hashtags',
 			[
-				'hashtag'      => $hashtag,
-				'instance_url' => $instance_url,
-				'label'        => sanitize_text_field( $label ?: '#' . $hashtag ),
-				'active'       => 1,
+				'hashtag'        => $hashtag,
+				'instance_url'   => $instance_url,
+				'label'          => sanitize_text_field( $label ?: '#' . $hashtag ),
+				'account_filter' => self::normalize_handle( $account_filter ),
+				'active'         => 1,
 			],
-			[ '%s', '%s', '%s', '%d' ]
+			[ '%s', '%s', '%s', '%s', '%d' ]
 		);
 
 		if ( $result === false ) {
@@ -126,6 +127,9 @@ class OUTPOST_Hashtag_Manager {
 		}
 		if ( isset( $data['label'] ) ) {
 			$allowed['label'] = sanitize_text_field( $data['label'] );
+		}
+		if ( isset( $data['account_filter'] ) ) {
+			$allowed['account_filter'] = self::normalize_handle( $data['account_filter'] );
 		}
 		if ( isset( $data['active'] ) ) {
 			$allowed['active'] = (int) (bool) $data['active'];
