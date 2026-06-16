@@ -11,7 +11,7 @@
  *      then schedules the next batch if more remain.
  *   4. When the final batch completes, posts are logged as sent.
  */
-class Outpost_Email_Digest {
+class OUTPOST_Email_Digest {
 
 	public static function init() {
 		add_action( 'outpost_daily_digest_event', [ __CLASS__, 'start_all_digests' ] );
@@ -26,10 +26,10 @@ class Outpost_Email_Digest {
 	 * Called by daily WP-Cron. Kicks off a batch chain for each active hashtag.
 	 */
 	public static function start_all_digests() {
-		$hashtags = Outpost_Hashtag_Manager::get_all( true );
+		$hashtags = OUTPOST_Hashtag_Manager::get_all( true );
 
 		foreach ( $hashtags as $hashtag_row ) {
-			$subscribers = Outpost_Subscriber::get_confirmed( $hashtag_row->id );
+			$subscribers = OUTPOST_Subscriber::get_confirmed( $hashtag_row->id );
 			if ( empty( $subscribers ) ) {
 				continue;
 			}
@@ -70,7 +70,7 @@ class Outpost_Email_Digest {
 		$offset      = (int) $offset;
 		$batch_size  = (int) get_option( 'outpost_digest_batch_size', 50 );
 
-		$hashtag_row = Outpost_Hashtag_Manager::get( $hashtag_id );
+		$hashtag_row = OUTPOST_Hashtag_Manager::get( $hashtag_id );
 		if ( ! $hashtag_row ) {
 			return;
 		}
@@ -122,17 +122,17 @@ class Outpost_Email_Digest {
 	 * @return int|WP_Error  Number of subscribers queued, or error.
 	 */
 	public static function send_digest_now( $hashtag_id ) {
-		$hashtag_row = Outpost_Hashtag_Manager::get( $hashtag_id );
+		$hashtag_row = OUTPOST_Hashtag_Manager::get( $hashtag_id );
 		if ( ! $hashtag_row ) {
 			return new WP_Error( 'not_found', 'Hashtag not found.' );
 		}
 
-		$subscribers = Outpost_Subscriber::get_confirmed( $hashtag_id );
+		$subscribers = OUTPOST_Subscriber::get_confirmed( $hashtag_id );
 		if ( empty( $subscribers ) ) {
 			return new WP_Error( 'no_subscribers', 'No confirmed subscribers for #' . $hashtag_row->hashtag );
 		}
 
-		$posts = Outpost_Feed_Fetcher::get_posts( $hashtag_id, Outpost_Settings::get_posts_per_digest(), true );
+		$posts = OUTPOST_Feed_Fetcher::get_posts( $hashtag_id, OUTPOST_Settings::get_posts_per_digest(), true );
 		if ( empty( $posts ) ) {
 			return new WP_Error( 'no_posts', 'No posts found for #' . $hashtag_row->hashtag );
 		}
@@ -166,7 +166,7 @@ class Outpost_Email_Digest {
 	private static function get_new_posts( $hashtag_row ) {
 		global $wpdb;
 
-		$posts = Outpost_Feed_Fetcher::get_posts_since_yesterday( $hashtag_row->id );
+		$posts = OUTPOST_Feed_Fetcher::get_posts_since_yesterday( $hashtag_row->id );
 		if ( empty( $posts ) ) {
 			return [];
 		}
@@ -183,7 +183,7 @@ class Outpost_Email_Digest {
 		return array_slice(
 			array_values( $new_posts ),
 			0,
-			Outpost_Settings::get_posts_per_digest()
+			OUTPOST_Settings::get_posts_per_digest()
 		);
 	}
 
@@ -221,15 +221,15 @@ class Outpost_Email_Digest {
 			$hashtag_row->hashtag
 		);
 
-		$unsubscribe_url = Outpost_Subscriber::unsubscribe_url( $subscriber );
+		$unsubscribe_url = OUTPOST_Subscriber::unsubscribe_url( $subscriber );
 		$name            = $subscriber->name ?: '';
-		$branding_html   = Outpost_Settings::get_branding_html( false );
+		$branding_html   = OUTPOST_Settings::get_branding_html( false );
 
 		ob_start();
 		include OUTPOST_PLUGIN_DIR . 'templates/email/digest.php';
 		$body = ob_get_clean();
 
-		Outpost_Subscriber::send_email( $subscriber->email, $subject, $body );
+		OUTPOST_Subscriber::send_email( $subscriber->email, $subject, $body );
 	}
 
 	/**
