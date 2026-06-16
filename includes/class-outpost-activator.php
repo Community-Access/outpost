@@ -10,13 +10,21 @@ class OUTPOST_Activator {
 	 * Run on plugin activation.
 	 */
 	public static function activate() {
+		// Detect a genuine first install before create_tables() writes the
+		// db_version option. Re-activating an already-set-up site must not nag
+		// with the wizard or redirect again.
+		$is_first_install = ( false === get_option( 'outpost_db_version' ) );
+
 		self::create_tables();
 		self::set_defaults();
 		self::schedule_cron();
-		// Flag so the admin sees the setup wizard on first load
-		update_option( 'outpost_show_setup_wizard', true );
-		// Short-lived flag so the next admin page load redirects to the wizard.
-		set_transient( 'outpost_redirect_to_wizard', true, 30 );
+
+		if ( $is_first_install ) {
+			// Flag so the admin sees the setup wizard, and a short-lived flag so
+			// the next admin page load redirects to it. Only on first install.
+			update_option( 'outpost_show_setup_wizard', true );
+			set_transient( 'outpost_redirect_to_wizard', true, 30 );
+		}
 	}
 
 	/**
