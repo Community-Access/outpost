@@ -87,6 +87,17 @@
 			</tr>
 		</table>
 
+		<h2><?php esc_html_e( 'Brand account', 'outpost' ); ?></h2>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><label for="s-brand-account"><?php esc_html_e( 'Mastodon account', 'outpost' ); ?></label></th>
+				<td>
+					<input type="text" id="s-brand-account" name="brand_account" value="<?php echo esc_attr( OUTPOST_Settings::get_brand_account() ); ?>" class="regular-text" placeholder="user@instance.social" />
+					<p class="description"><?php esc_html_e( 'Optional. Used by the account feed. Format: user@instance.social.', 'outpost' ); ?></p>
+				</td>
+			</tr>
+		</table>
+
 		<h2><?php esc_html_e( 'Branding', 'outpost' ); ?></h2>
 		<p><?php esc_html_e( 'Add a line at the bottom of every feed display and digest email to credit your organization.', 'outpost' ); ?></p>
 		<table class="form-table" role="presentation">

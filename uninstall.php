@@ -40,6 +40,7 @@ $options = [
 	'outpost_cache_duration',
 	'outpost_double_optin',
 	'outpost_manage_page_id',
+	'outpost_brand_account',
 ];
 
 foreach ( $options as $option ) {

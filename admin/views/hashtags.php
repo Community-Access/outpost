@@ -30,6 +30,13 @@
 				</td>
 			</tr>
 			<tr>
+				<th scope="row"><label for="edit-account-filter"><?php esc_html_e( 'Account filter', 'outpost' ); ?></label></th>
+				<td>
+					<input type="text" id="edit-account-filter" name="account_filter" value="<?php echo esc_attr( $edit_row->account_filter ); ?>" class="regular-text" placeholder="user@instance.social" />
+					<p class="description"><?php esc_html_e( 'Optional. Only show posts from this account. Leave blank to show all accounts.', 'outpost' ); ?></p>
+				</td>
+			</tr>
+			<tr>
 				<th scope="row"><?php esc_html_e( 'Active', 'outpost' ); ?></th>
 				<td>
 					<input type="checkbox" id="edit-active" name="active" value="1" <?php checked( $edit_row->active ); ?> />
@@ -70,6 +77,13 @@
 				<td>
 					<input type="text" id="new-label" name="label" value="" class="regular-text" placeholder="BitsTips Daily" />
 					<p class="description"><?php esc_html_e( 'Optional. Defaults to the hashtag name.', 'outpost' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="new-account-filter"><?php esc_html_e( 'Account filter', 'outpost' ); ?></label></th>
+				<td>
+					<input type="text" id="new-account-filter" name="account_filter" value="" class="regular-text" placeholder="user@instance.social" />
+					<p class="description"><?php esc_html_e( 'Optional. Only show posts from this account. Leave blank to show all accounts.', 'outpost' ); ?></p>
 				</td>
 			</tr>
 		</table>

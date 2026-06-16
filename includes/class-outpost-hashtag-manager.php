@@ -69,7 +69,7 @@ class OUTPOST_Hashtag_Manager {
 	 * @param string $label         Human-readable label.
 	 * @return int|WP_Error  New row ID on success, WP_Error on failure.
 	 */
-	public static function add( $hashtag, $instance_url, $label = '' ) {
+	public static function add( $hashtag, $instance_url, $label = '', $account_filter = '' ) {
 		global $wpdb;
 
 		$hashtag      = self::normalize_tag( $hashtag );
@@ -91,12 +91,13 @@ class OUTPOST_Hashtag_Manager {
 		$result = $wpdb->insert(
 			$wpdb->prefix . 'outpost_hashtags',
 			[
-				'hashtag'      => $hashtag,
-				'instance_url' => $instance_url,
-				'label'        => sanitize_text_field( $label ?: '#' . $hashtag ),
-				'active'       => 1,
+				'hashtag'        => $hashtag,
+				'instance_url'   => $instance_url,
+				'label'          => sanitize_text_field( $label ?: '#' . $hashtag ),
+				'account_filter' => self::normalize_handle( $account_filter ),
+				'active'         => 1,
 			],
-			[ '%s', '%s', '%s', '%d' ]
+			[ '%s', '%s', '%s', '%s', '%d' ]
 		);
 
 		if ( $result === false ) {
@@ -126,6 +127,9 @@ class OUTPOST_Hashtag_Manager {
 		}
 		if ( isset( $data['label'] ) ) {
 			$allowed['label'] = sanitize_text_field( $data['label'] );
+		}
+		if ( isset( $data['account_filter'] ) ) {
+			$allowed['account_filter'] = self::normalize_handle( $data['account_filter'] );
 		}
 		if ( isset( $data['active'] ) ) {
 			$allowed['active'] = (int) (bool) $data['active'];
@@ -189,6 +193,49 @@ class OUTPOST_Hashtag_Manager {
 		}
 
 		return $url;
+	}
+
+	/**
+	 * Normalize a Mastodon account handle: trim, strip one leading @, lowercase.
+	 *
+	 * @param string $handle
+	 * @return string
+	 */
+	public static function normalize_handle( $handle ) {
+		return strtolower( ltrim( trim( (string) $handle ), '@' ) );
+	}
+
+	/**
+	 * Whether a post matches a stored account filter.
+	 *
+	 * @param string $filter      Stored filter (any casing; may be blank).
+	 * @param string $acct        Post's account->acct ("user" if local to the
+	 *                             hashtag instance, "user@host" if remote).
+	 * @param string $account_url Post's account->url (used to derive the host
+	 *                             when the acct is local).
+	 * @return bool
+	 */
+	public static function post_matches_filter( $filter, $acct, $account_url ) {
+		$filter = self::normalize_handle( $filter );
+		if ( '' === $filter ) {
+			return true;
+		}
+
+		$acct = strtolower( (string) $acct );
+		if ( $filter === $acct ) {
+			return true;
+		}
+
+		// Filter carries a host but the post is local to the hashtag instance
+		// (acct has no host): compare against username@<host of account url>.
+		if ( false !== strpos( $filter, '@' ) && false === strpos( $acct, '@' ) ) {
+			$host = strtolower( (string) wp_parse_url( $account_url, PHP_URL_HOST ) );
+			if ( $host && $filter === $acct . '@' . $host ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
