@@ -69,7 +69,6 @@
 
 		var $form    = $(this);
 		var $msgs    = $form.siblings('.outpost-lookup__messages');
-		var $results = $form.siblings('.outpost-lookup__results');
 		var $btn     = $form.find('button[type="submit"]');
 		var origText = $btn.text();
 		var email    = $form.find('input[name="outpost_lookup_email"]').val().trim();
@@ -83,7 +82,6 @@
 
 		$btn.prop('disabled', true).text('...');
 		setMessage( $msgs, 'status', 'Looking up your subscriptions…' );
-		$results.html('');
 
 		$.ajax({
 			url:  outpostData.ajaxUrl,
@@ -95,7 +93,8 @@
 			},
 			success: function (response) {
 				if ( response.success ) {
-					$results.html( response.data.html );
+					setMessage( $msgs, 'success', response.data.message );
+					$form[0].reset();
 				} else {
 					setMessage( $msgs, 'error', response.data.message );
 				}
