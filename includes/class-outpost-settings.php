@@ -60,6 +60,10 @@ class OUTPOST_Settings {
 		return get_option( 'outpost_branding_url', '' );
 	}
 
+	public static function get_brand_account() {
+		return get_option( 'outpost_brand_account', '' );
+	}
+
 	/**
 	 * Returns rendered branding HTML, or empty string if not configured.
 	 * Used in both feed display and email templates.
@@ -107,6 +111,7 @@ class OUTPOST_Settings {
 			'outpost_branding_text',
 			'outpost_branding_url',
 			'outpost_manage_page_id',
+			'outpost_brand_account',
 		];
 
 		foreach ( $allowed_keys as $key ) {
@@ -120,6 +125,9 @@ class OUTPOST_Settings {
 					break;
 				case 'outpost_branding_url':
 					update_option( $key, esc_url_raw( $data[ $key ] ) );
+					break;
+				case 'outpost_brand_account':
+					update_option( $key, OUTPOST_Hashtag_Manager::normalize_handle( $data[ $key ] ) );
 					break;
 				case 'outpost_digest_send_hour':
 				case 'outpost_digest_send_minute':

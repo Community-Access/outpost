@@ -123,6 +123,7 @@ class OUTPOST_Activator {
 			'outpost_cache_duration'        => 3600, // 1 hour
 			'outpost_double_optin'          => true,
 			'outpost_manage_page_id'        => 0,
+			'outpost_brand_account'         => '',
 		];
 
 		foreach ( $defaults as $key => $value ) {
