@@ -19,6 +19,9 @@
 		var hashtagId = $form.data('hashtag-id');
 		var email     = $form.find('input[name="outpost_email"]').val().trim();
 		var name      = $form.find('input[name="outpost_name"]').val().trim();
+		// Send the honeypot value so a browser-driven bot that fills every field
+		// is caught server-side. Real users never reach this field.
+		var hpCheck   = $form.find('input[name="outpost_hp_check"]').val() || '';
 
 		// Basic client-side validation
 		if ( ! email ) {
@@ -39,6 +42,7 @@
 				hashtag_id:   hashtagId,
 				email:        email,
 				name:         name,
+				outpost_hp_check: hpCheck,
 			},
 			success: function (response) {
 				if ( response.success ) {

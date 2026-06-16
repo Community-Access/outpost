@@ -292,16 +292,21 @@
 	white-space: nowrap;
 }
 
-/* Honeypot: kept in the DOM for bots but moved off-screen and out of the layout.
+/* Honeypot: kept in the DOM for bots but visually hidden in place via the clip
+   technique (avoids the horizontal-scroll edge case of off-screen positioning).
    The field is also tabindex="-1" in the markup, so keyboard users skip it. No
    aria-hidden (a focusable field inside it would fail WCAG 4.1.2); the field's
    "leave blank" label covers the rare screen-reader user who navigates onto it. */
 .outpost-hp {
 	position: absolute;
-	left: -9999px;
 	width: 1px;
 	height: 1px;
+	margin: -1px;
+	padding: 0;
 	overflow: hidden;
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	border: 0;
 }
 
 /* Reduced motion */

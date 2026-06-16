@@ -179,7 +179,7 @@ class OUTPOST_Shortcodes {
 					</div>
 
 					<?php
-					// Honeypot: kept in the DOM for bots but moved off-screen via CSS and
+					// Honeypot: kept in the DOM for bots but visually hidden via CSS and
 					// removed from the tab order. No aria-hidden, since a focusable field
 					// inside an aria-hidden subtree fails WCAG 4.1.2. The "leave blank"
 					// label covers the rare screen-reader user who navigates onto it.
@@ -233,8 +233,8 @@ class OUTPOST_Shortcodes {
 		}
 
 		$hashtag_id = isset( $_POST['hashtag_id'] ) ? (int) $_POST['hashtag_id'] : 0;
-		$email      = isset( $_POST['email'] )      ? sanitize_email( $_POST['email'] ) : '';
-		$name       = isset( $_POST['name'] )       ? sanitize_text_field( $_POST['name'] ) : '';
+		$email      = isset( $_POST['email'] )      ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
+		$name       = isset( $_POST['name'] )       ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
 
 		$result = OUTPOST_Subscriber::subscribe( $hashtag_id, $email, $name );
 
