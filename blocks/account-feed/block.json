@@ -1,0 +1,20 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "outpost/account-feed",
+    "title": "Mastodon Account Feed",
+    "category": "widgets",
+    "icon": "rss",
+    "description": "Display recent posts from the configured brand Mastodon account.",
+    "textdomain": "outpost",
+    "attributes": {
+        "limit": {
+            "type": "number",
+            "default": 20
+        }
+    },
+    "supports": {
+        "html": false
+    },
+    "editorScript": "file:./editor.js"
+}
