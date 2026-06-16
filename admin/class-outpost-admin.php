@@ -144,9 +144,10 @@ class OUTPOST_Admin {
 				'outpost_branding_url'       => $_POST['branding_url'] ?? '',
 				'outpost_manage_page_id'     => $_POST['manage_page_id'] ?? 0,
 			] );
-			// Reschedule cron with updated time
-			OUTPOST_Activator::deactivate();
-			OUTPOST_Activator::activate(); // Re-runs cron schedule only
+			// Reschedule only the digest cron to reflect the new send time. Do not
+			// round-trip through activate(), which would also re-run table creation,
+			// re-seed defaults, and re-flag the setup wizard.
+			OUTPOST_Activator::reschedule_digest_cron();
 			wp_safe_redirect( add_query_arg( [ 'page' => 'outpost-settings', 'outpost_notice' => 'saved' ], admin_url( 'admin.php' ) ) );
 			exit;
 		}
