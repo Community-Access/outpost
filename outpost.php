@@ -6,7 +6,7 @@
  * Version:     1.1.0
  * Requires at least: 7.0
  * Tested up to: 7.0
- * Requires PHP: 8.3
+ * Requires PHP: 8.2
  * Author:      Community Access
  * Author URI:  https://community-access.org
  * License:     GPL-2.0-or-later
