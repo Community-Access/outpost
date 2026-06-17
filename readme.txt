@@ -3,7 +3,7 @@ Contributors: communityaccess
 Tags: mastodon, fediverse, email digest, accessibility, hashtag
 Requires at least: 7.0
 Tested up to: 7.0
-Requires PHP: 8.3
+Requires PHP: 8.2
 Stable tag: 1.1.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -74,7 +74,7 @@ Posts are fetched from the Mastodon API and cached for 60 minutes by default
   and unique element IDs for repeated feeds/forms.
 * Performance: paginated the subscribers admin screen; explicit option autoload.
 * Tooling: PHPCS (WordPress-Extra) + PHPCompatibility, CI, and a contributing
-  guide. Minimum PHP is now 8.3.
+  guide. Minimum PHP is now 8.2.
 
 = 1.0.0 =
 * Initial release: Mastodon hashtag feeds, subscribe forms, daily email digests,
@@ -83,4 +83,4 @@ Posts are fetched from the Mastodon API and cached for 60 minutes by default
 == Upgrade Notice ==
 
 = 1.1.0 =
-Adds account feeds and hardens security and accessibility. Requires PHP 8.3.
+Adds account feeds and hardens security and accessibility. Requires PHP 8.2.

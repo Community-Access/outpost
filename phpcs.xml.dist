@@ -31,7 +31,7 @@
 	</rule>
 
 	<!-- PHP version floor (matches Requires PHP). -->
-	<config name="testVersion" value="8.3-"/>
+	<config name="testVersion" value="8.2-"/>
 	<rule ref="PHPCompatibilityWP"/>
 
 	<!-- Plugin text domain. -->

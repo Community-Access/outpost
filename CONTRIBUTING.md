@@ -40,4 +40,4 @@ install, so it is not part of CI. Run it locally before a release:
 - Where a security sniff flags a known-safe pattern (pre-escaped HTML,
   trusted table names, theme-provided markup), use a narrowly-scoped
   `phpcs:ignore` with a `--` reason rather than disabling the sniff globally.
-- Minimum PHP is 8.3; `PHPCompatibilityWP` enforces this.
+- Minimum PHP is 8.2; `PHPCompatibilityWP` enforces this.
